@@ -47,21 +47,22 @@
       "category": "Entertainment",
       "comments": 354,
       "duration": "25:00",
-      "thumbnail": "/thumbnails/latest_video.png",
+      "thumbnail": "/thumbnails/1.webp",
       "description": "This Man Truly Loves You But Why Is There Still Another Woman in His Life?",
       "impressions": 17337079,
-      "publishDate": "2026-07-17",
+      "publishDate": "2026-02-14",
       "durationSecs": 1500,
       "watchTimeHrs": 58293.6,
-      "netSubscribers": 4946,
+      "netSubscribers": 4352,
       "viewsFormatted": "274.3K",
       "avgViewDuration": "12:45",
-      "subscribersLost": 0,
+      "subscribersLost": 594,
       "revenueFormatted": "₹1,19,349.71",
       "subscribersGained": 4946,
-      "subscribersNetFormatted": "+4.9K",
       "avgViewDurationSecs": 765,
-      "watchTimeHrsFormatted": "58.3K hrs"
+      "watchTimeHrsFormatted": "58.3K hrs",
+      "subscribersNetFormatted": "+4.4K",
+      "subscribersGainedFormatted": "+4.9K"
     },
     {
       "id": "VID002",
@@ -83,12 +84,15 @@
       "durationSecs": 862,
       "watchTimeHrs": 55750,
       "netSubscribers": 10989,
-      "viewsFormatted": "892K",
+      "viewsFormatted": "892.0K",
       "avgViewDuration": "3:45",
       "subscribersLost": 1499,
       "revenueFormatted": "₹30,149.60",
       "subscribersGained": 12488,
-      "avgViewDurationSecs": 225
+      "avgViewDurationSecs": 225,
+      "subscribersNetFormatted": "+11.0K",
+      "subscribersGainedFormatted": "+12.5K",
+      "watchTimeHrsFormatted": "55.8K hrs"
     },
     {
       "id": "VID003",
@@ -110,12 +114,15 @@
       "durationSecs": 734,
       "watchTimeHrs": 31958.3,
       "netSubscribers": 8008,
-      "viewsFormatted": "650K",
+      "viewsFormatted": "650.0K",
       "avgViewDuration": "2:57",
       "subscribersLost": 1092,
       "revenueFormatted": "₹21,970.00",
       "subscribersGained": 9100,
-      "avgViewDurationSecs": 177
+      "avgViewDurationSecs": 177,
+      "subscribersNetFormatted": "+8.0K",
+      "subscribersGainedFormatted": "+9.1K",
+      "watchTimeHrsFormatted": "32.0K hrs"
     },
     {
       "id": "VID004",
@@ -137,12 +144,15 @@
       "durationSecs": 618,
       "watchTimeHrs": 28213.3,
       "netSubscribers": 6517,
-      "viewsFormatted": "529K",
+      "viewsFormatted": "529.0K",
       "avgViewDuration": "3:12",
       "subscribersLost": 889,
       "revenueFormatted": "₹17,880.20",
       "subscribersGained": 7406,
-      "avgViewDurationSecs": 192
+      "avgViewDurationSecs": 192,
+      "subscribersNetFormatted": "+6.5K",
+      "subscribersGainedFormatted": "+7.4K",
+      "watchTimeHrsFormatted": "28.2K hrs"
     },
     {
       "id": "VID005",
@@ -164,12 +174,15 @@
       "durationSecs": 618,
       "watchTimeHrs": 12641.7,
       "netSubscribers": 5051,
-      "viewsFormatted": "410K",
+      "viewsFormatted": "410.0K",
       "avgViewDuration": "1:51",
       "subscribersLost": 689,
       "revenueFormatted": "₹13,817.00",
       "subscribersGained": 5740,
-      "avgViewDurationSecs": 111
+      "avgViewDurationSecs": 111,
+      "subscribersNetFormatted": "+5.1K",
+      "subscribersGainedFormatted": "+5.7K",
+      "watchTimeHrsFormatted": "12.6K hrs"
     },
     {
       "id": "VID006",
@@ -191,12 +204,15 @@
       "durationSecs": 734,
       "watchTimeHrs": 3771.7,
       "netSubscribers": 5396,
-      "viewsFormatted": "438K",
+      "viewsFormatted": "438.0K",
       "avgViewDuration": "0:31",
       "subscribersLost": 736,
       "revenueFormatted": "₹15,111.00",
       "subscribersGained": 6132,
-      "avgViewDurationSecs": 31
+      "avgViewDurationSecs": 31,
+      "subscribersNetFormatted": "+5.4K",
+      "subscribersGainedFormatted": "+6.1K",
+      "watchTimeHrsFormatted": "3.8K hrs"
     },
     {
       "id": "VID007",
@@ -223,7 +239,10 @@
       "subscribersLost": 3545,
       "revenueFormatted": "₹70,052.00",
       "subscribersGained": 29540,
-      "avgViewDurationSecs": 46
+      "avgViewDurationSecs": 46,
+      "subscribersNetFormatted": "+26.0K",
+      "subscribersGainedFormatted": "+29.5K",
+      "watchTimeHrsFormatted": "27.0K hrs"
     },
     {
       "id": "VID008",
@@ -245,12 +264,15 @@
       "durationSecs": 476,
       "watchTimeHrs": 33244.2,
       "netSubscribers": 11987,
-      "viewsFormatted": "973K",
+      "viewsFormatted": "973.0K",
       "avgViewDuration": "2:03",
       "subscribersLost": 1635,
       "revenueFormatted": "₹32,498.20",
       "subscribersGained": 13622,
-      "avgViewDurationSecs": 123
+      "avgViewDurationSecs": 123,
+      "subscribersNetFormatted": "+12.0K",
+      "subscribersGainedFormatted": "+13.6K",
+      "watchTimeHrsFormatted": "33.2K hrs"
     },
     {
       "id": "VID009",
@@ -277,7 +299,10 @@
       "subscribersLost": 2819,
       "revenueFormatted": "₹57,052.00",
       "subscribersGained": 23492,
-      "avgViewDurationSecs": 225
+      "avgViewDurationSecs": 225,
+      "subscribersNetFormatted": "+20.7K",
+      "subscribersGainedFormatted": "+23.5K",
+      "watchTimeHrsFormatted": "104.9K hrs"
     },
     {
       "id": "VID010",
@@ -299,13 +324,203 @@
       "durationSecs": 476,
       "watchTimeHrs": 45111.1,
       "netSubscribers": 10004,
-      "viewsFormatted": "812K",
+      "viewsFormatted": "812.0K",
       "avgViewDuration": "3:20",
       "subscribersLost": 1364,
       "revenueFormatted": "₹27,283.20",
       "subscribersGained": 11368,
-      "avgViewDurationSecs": 200
+      "avgViewDurationSecs": 200,
+      "subscribersNetFormatted": "+10.0K",
+      "subscribersGainedFormatted": "+11.4K",
+      "watchTimeHrsFormatted": "45.1K hrs"
     }
   ],
-  "savedAt": "2026-08-14T13:50:10.934Z"
+  "comments": [
+    {
+      "id": "C001",
+      "videoId": "VID001",
+      "author": "TechGuru",
+      "authorAvatar": "https://example.com/u1.jpg",
+      "text": "This video is incredible!",
+      "likes": 523,
+      "heart": true,
+      "pinned": false,
+      "time": "2026-07-02",
+      "videoTitle": "This Man Truly Loves You But Why Is There Still Another Woman in His Life?",
+      "status": "Published",
+      "replies": []
+    },
+    {
+      "id": "C002",
+      "videoId": "VID001",
+      "author": "Aman",
+      "authorAvatar": "https://example.com/u2.jpg",
+      "text": "Loved the automation ideas.",
+      "likes": 211,
+      "heart": false,
+      "pinned": false,
+      "time": "2026-07-02",
+      "videoTitle": "This Man Truly Loves You But Why Is There Still Another Woman in His Life?",
+      "status": "Published",
+      "replies": []
+    },
+    {
+      "id": "C003",
+      "videoId": "VID002",
+      "author": "Sarah",
+      "authorAvatar": "https://example.com/u3.jpg",
+      "text": "Worth every minute!",
+      "likes": 842,
+      "heart": true,
+      "pinned": true,
+      "time": "2026-06-19",
+      "videoTitle": "ABC Alphabet Song for Kids",
+      "status": "Published",
+      "replies": []
+    }
+  ],
+  "playlists": [
+    {
+      "id": "PL001",
+      "title": "AI Tutorials",
+      "description": "Learn AI",
+      "visibility": "Public",
+      "thumbnail": "https://picsum.photos/seed/pl1/300/200",
+      "videoCount": 0,
+      "lastUpdated": "From spreadsheet"
+    },
+    {
+      "id": "PL002",
+      "title": "Productivity",
+      "description": "Boost productivity",
+      "visibility": "Public",
+      "thumbnail": "https://picsum.photos/seed/pl2/300/200",
+      "videoCount": 0,
+      "lastUpdated": "From spreadsheet"
+    }
+  ],
+  "settings": {
+    "currency": "USD",
+    "theme": "Dark",
+    "autoRefreshSeconds": 60,
+    "liveSync": true,
+    "country": "United States",
+    "keywords": "",
+    "defaultVisibility": "Public",
+    "defaultCategory": "Science & Technology"
+  },
+  "subtitles": [
+    {
+      "id": "sub_VID001",
+      "videoId": "VID001",
+      "videoTitle": "This Man Truly Loves You But Why Is There Still Another Woman in His Life?",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-07-17",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    },
+    {
+      "id": "sub_VID002",
+      "videoId": "VID002",
+      "videoTitle": "ABC Alphabet Song for Kids",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-04-16",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    },
+    {
+      "id": "sub_VID003",
+      "videoId": "VID003",
+      "videoTitle": "Counting 1 to 100 for Children",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-04-27",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    },
+    {
+      "id": "sub_VID004",
+      "videoId": "VID004",
+      "videoTitle": "Baby Shark Dance Adventure",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-05-08",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    },
+    {
+      "id": "sub_VID005",
+      "videoId": "VID005",
+      "videoTitle": "Dinosaur Cartoon for Kids",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-05-19",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    },
+    {
+      "id": "sub_VID006",
+      "videoId": "VID006",
+      "videoTitle": "Learn Shapes with Toys",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-05-30",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    },
+    {
+      "id": "sub_VID007",
+      "videoId": "VID007",
+      "videoTitle": "Nursery Rhymes Collection",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-06-10",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    },
+    {
+      "id": "sub_VID008",
+      "videoId": "VID008",
+      "videoTitle": "Farm Animals Learning Video",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-06-21",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    },
+    {
+      "id": "sub_VID009",
+      "videoId": "VID009",
+      "videoTitle": "Rainbow Colors for Toddlers",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-07-02",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    },
+    {
+      "id": "sub_VID010",
+      "videoId": "VID010",
+      "videoTitle": "Good Morning Kids Song",
+      "languages": [
+        "English (Automatic)"
+      ],
+      "modified": "2026-07-13",
+      "titleDescriptionState": "Published",
+      "subtitlesState": "Published"
+    }
+  ],
+  "audioTracks": [],
+  "savedAt": "2026-08-20T16:13:59.862Z"
 }

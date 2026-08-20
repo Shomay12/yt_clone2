@@ -10,8 +10,8 @@ const __dirname = path.dirname(__filename);
 const CRM_STORE_FILE = path.resolve(__dirname, 'crm_store.json');
 
 const insforgeServer = createClient({
-  baseUrl: 'https://hhgc52mf.ap-southeast.insforge.app',
-  anonKey: 'ik_a6fb7c9c4629443fd707d49bf6ad0d8e'
+  baseUrl: process.env.INSFORGE_URL || process.env.VITE_INSFORGE_BASE_URL || 'https://zt9vsanb.ap-southeast.insforge.app',
+  anonKey: process.env.INSFORGE_ANON_KEY || process.env.VITE_INSFORGE_ANON_KEY || 'anon_6c1365427153ae74a1af5b04648e3ceed511b3fee1dedd3dafae52eb0c59cc38'
 });
 
 export function registerSpreadsheetRoutes(app) {
@@ -19,19 +19,32 @@ export function registerSpreadsheetRoutes(app) {
   app.get('/api/crm/data', async (req, res) => {
     try {
       // 1. Fetch from Insforge DB
-      const [{ data: channelData }, { data: videosData }, { data: stateSnapshot }] = await Promise.all([
+      const [
+        { data: channelData },
+        { data: videosData },
+        { data: commentsData },
+        { data: playlistsData },
+        { data: settingsData },
+        { data: stateSnapshot }
+      ] = await Promise.all([
         insforgeServer.database.from('crm_channel').select('*').limit(1).catch(() => ({ data: null })),
         insforgeServer.database.from('crm_videos').select('*').order('sort_order', { ascending: true }).catch(() => ({ data: null })),
+        insforgeServer.database.from('crm_comments').select('*').order('created_at', { ascending: false }).catch(() => ({ data: null })),
+        insforgeServer.database.from('crm_playlists').select('*').order('created_at', { ascending: false }).catch(() => ({ data: null })),
+        insforgeServer.database.from('crm_settings').select('*').eq('key', 'app_settings').limit(1).catch(() => ({ data: null })),
         insforgeServer.database.from('crm_state').select('state_data').eq('key', 'current_state').single().catch(() => ({ data: null }))
       ]);
 
-      if (channelData || videosData || stateSnapshot) {
+      if (channelData || videosData || commentsData || playlistsData || stateSnapshot) {
         return res.json({
           success: true,
           source: 'insforge_db',
           data: {
             channelInfo: channelData?.[0] || null,
             videos: videosData || null,
+            comments: commentsData || null,
+            playlists: playlistsData || null,
+            settings: settingsData?.[0] || null,
             stateData: stateSnapshot?.state_data || null
           }
         });

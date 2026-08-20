@@ -1,9 +1,9 @@
 import { createClient } from '@insforge/sdk';
 
 export const INSFORGE_CONFIG = {
-  baseUrl: 'https://hhgc52mf.ap-southeast.insforge.app',
-  anonKey: 'ik_a6fb7c9c4629443fd707d49bf6ad0d8e',
-  projectId: '781eb340-f9d7-4e99-b55d-c84fb3d6f54a',
+  baseUrl: import.meta.env?.VITE_INSFORGE_URL || import.meta.env?.VITE_INSFORGE_BASE_URL || 'https://zt9vsanb.ap-southeast.insforge.app',
+  anonKey: import.meta.env?.VITE_INSFORGE_ANON_KEY || 'anon_6c1365427153ae74a1af5b04648e3ceed511b3fee1dedd3dafae52eb0c59cc38',
+  projectId: import.meta.env?.VITE_INSFORGE_PROJECT_ID || 'fa322b88-223f-474a-bb6c-770596286e21',
   projectName: 'yt_clone_data'
 };
 
@@ -35,44 +35,33 @@ export const formatSecondsToAvd = (totalSecs) => {
 
 export const InsforgeService = {
   /**
-   * Load channel & videos data from Insforge PostgreSQL database.
+   * Load complete CRM data from Insforge PostgreSQL database.
    */
   async loadDatabaseData() {
     try {
-      // 1. Load Channel Info
-      const { data: channelData, error: channelErr } = await insforge.database
-        .from('crm_channel')
-        .select('*')
-        .limit(1);
+      // 1. Parallel fetch from all CRM tables
+      const [
+        { data: channelData, error: channelErr },
+        { data: videosData, error: videosErr },
+        { data: commentsData, error: commentsErr },
+        { data: playlistsData, error: playlistsErr },
+        { data: settingsData, error: settingsErr },
+        { data: subtitlesData, error: subtitlesErr },
+        { data: audioData, error: audioErr },
+        { data: snapshot, error: snapshotErr }
+      ] = await Promise.all([
+        insforge.database.from('crm_channel').select('*').limit(1).catch(err => ({ data: null, error: err })),
+        insforge.database.from('crm_videos').select('*').order('sort_order', { ascending: true }).catch(err => ({ data: null, error: err })),
+        insforge.database.from('crm_comments').select('*').order('created_at', { ascending: false }).catch(err => ({ data: null, error: err })),
+        insforge.database.from('crm_playlists').select('*').order('created_at', { ascending: false }).catch(err => ({ data: null, error: err })),
+        insforge.database.from('crm_settings').select('*').eq('key', 'app_settings').limit(1).catch(err => ({ data: null, error: err })),
+        insforge.database.from('crm_subtitles').select('*').catch(err => ({ data: null, error: err })),
+        insforge.database.from('crm_audio_library').select('*').catch(err => ({ data: null, error: err })),
+        insforge.database.from('crm_state').select('state_data').eq('key', 'current_state').single().catch(err => ({ data: null, error: err }))
+      ]);
 
-      if (channelErr) {
-        console.warn('[Insforge] Channel fetch note:', channelErr.message);
-      }
-
-      // 2. Load Videos List
-      const { data: videosData, error: videosErr } = await insforge.database
-        .from('crm_videos')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (videosErr) {
-        console.warn('[Insforge] Videos fetch note:', videosErr.message);
-      }
-
-      // 3. Load State Snapshot if available
-      let stateData = null;
-      try {
-        const { data: snapshot } = await insforge.database
-          .from('crm_state')
-          .select('state_data')
-          .eq('key', 'current_state')
-          .single();
-        if (snapshot && snapshot.state_data) {
-          stateData = snapshot.state_data;
-        }
-      } catch {
-        // Snapshot is optional
-      }
+      if (channelErr) console.warn('[Insforge] Channel fetch note:', channelErr.message);
+      if (videosErr) console.warn('[Insforge] Videos fetch note:', videosErr.message);
 
       let channelInfo = null;
       if (channelData && channelData.length > 0) {
@@ -148,11 +137,86 @@ export const InsforgeService = {
         });
       }
 
+      let comments = null;
+      if (commentsData && commentsData.length > 0) {
+        comments = commentsData.map(c => ({
+          id: c.id,
+          videoId: c.video_id,
+          author: c.author,
+          authorAvatar: c.author_avatar,
+          text: c.text,
+          likes: Number(c.likes) || 0,
+          heart: Boolean(c.heart),
+          userLiked: Boolean(c.user_liked),
+          time: c.time || 'Just now',
+          status: c.status || 'Published',
+          replies: Array.isArray(c.replies) ? c.replies : []
+        }));
+      }
+
+      let playlists = null;
+      if (playlistsData && playlistsData.length > 0) {
+        playlists = playlistsData.map(p => ({
+          id: p.id,
+          title: p.title,
+          videoCount: Number(p.video_count) || 0,
+          visibility: p.visibility || 'Public',
+          lastUpdated: p.last_updated || 'Just now',
+          videos: Array.isArray(p.videos) ? p.videos : []
+        }));
+      }
+
+      let settings = null;
+      if (settingsData && settingsData.length > 0) {
+        const s = settingsData[0];
+        settings = {
+          currency: s.currency || 'INR - Indian Rupee',
+          theme: s.theme || 'Dark',
+          country: s.country || 'United States',
+          keywords: s.keywords || '',
+          defaultVisibility: s.default_visibility || 'Public',
+          defaultCategory: s.default_category || 'Entertainment',
+          blockedWords: s.blocked_words || ''
+        };
+      }
+
+      let subtitles = null;
+      if (subtitlesData && subtitlesData.length > 0) {
+        subtitles = subtitlesData.map(sub => ({
+          id: sub.id,
+          videoId: sub.video_id,
+          videoTitle: sub.video_title,
+          languages: Array.isArray(sub.languages) ? sub.languages : ['English (Automatic)'],
+          modified: sub.modified || '2026-08-12',
+          titleDescriptionState: sub.title_description_state || 'Published',
+          subtitlesState: sub.subtitles_state || 'Published'
+        }));
+      }
+
+      let audioTracks = null;
+      if (audioData && audioData.length > 0) {
+        audioTracks = audioData.map(a => ({
+          id: a.id,
+          title: a.title,
+          artist: a.artist,
+          duration: a.duration || '3:00',
+          genre: a.genre || 'Electronic',
+          mood: a.mood || 'Dramatic',
+          starred: Boolean(a.starred),
+          audioUrl: a.audio_url || ''
+        }));
+      }
+
       return {
         success: true,
         channelInfo,
         videos,
-        stateData
+        comments,
+        playlists,
+        settings,
+        subtitles,
+        audioTracks,
+        stateData: snapshot?.state_data || null
       };
     } catch (err) {
       console.error('[Insforge] Failed to load data from database:', err);
@@ -168,11 +232,11 @@ export const InsforgeService = {
     try {
       const payload = {
         channel_id: channelInfo.id || 'UCqpdVWIzEQUcbf4pAxlneOQ',
-        name: channelInfo.name || 'Talk Money With Pavan',
-        handle: channelInfo.handle || '@talkmoneywithpavan',
+        name: channelInfo.name || 'Kids Toon',
+        handle: channelInfo.handle || '@kidstoon',
         avatar: channelInfo.avatar,
         banner: channelInfo.banner,
-        country: channelInfo.country || 'IN',
+        country: channelInfo.country || 'United States',
         subscribers: Number(channelInfo.subscribers) || 0,
         subscribers_formatted: channelInfo.subscribersFormatted || `${channelInfo.subscribers}`,
         subscribers_gained_last_28_days: Number(channelInfo.subscribersGainedLast28Days) || 0,
@@ -194,9 +258,7 @@ export const InsforgeService = {
         .from('crm_channel')
         .upsert(payload);
 
-      if (error) {
-        console.warn('[Insforge] Upsert channel error:', error);
-      }
+      if (error) console.warn('[Insforge] Upsert channel error:', error);
       return { success: !error, data };
     } catch (err) {
       console.error('[Insforge] saveChannelMetrics error:', err);
@@ -252,9 +314,7 @@ export const InsforgeService = {
         .from('crm_videos')
         .upsert(payload);
 
-      if (error) {
-        console.warn('[Insforge] Upsert video error:', error);
-      }
+      if (error) console.warn('[Insforge] Upsert video error:', error);
       return { success: !error, data };
     } catch (err) {
       console.error('[Insforge] saveVideoMetrics error:', err);
@@ -313,9 +373,7 @@ export const InsforgeService = {
         .from('crm_videos')
         .upsert(records);
 
-      if (error) {
-        console.warn('[Insforge] Batch upsert videos error:', error);
-      }
+      if (error) console.warn('[Insforge] Batch upsert videos error:', error);
       return { success: !error, data };
     } catch (err) {
       console.error('[Insforge] saveAllVideos error:', err);
@@ -324,7 +382,161 @@ export const InsforgeService = {
   },
 
   /**
-   * Persist full snapshot to crm_state table.
+   * Save comments to Insforge crm_comments table.
+   */
+  async saveComments(commentsList) {
+    if (!Array.isArray(commentsList) || commentsList.length === 0) return;
+    try {
+      const records = commentsList.map(c => ({
+        id: String(c.id),
+        video_id: c.videoId ? String(c.videoId) : 'VID001',
+        author: c.author || 'User',
+        author_avatar: c.authorAvatar || '',
+        text: c.text || '',
+        likes: Number(c.likes) || 0,
+        heart: Boolean(c.heart),
+        user_liked: Boolean(c.userLiked),
+        time: c.time || 'Just now',
+        status: c.status || 'Published',
+        replies: Array.isArray(c.replies) ? c.replies : []
+      }));
+
+      const { data, error } = await insforge.database
+        .from('crm_comments')
+        .upsert(records);
+
+      if (error) console.warn('[Insforge] Batch upsert comments error:', error);
+      return { success: !error, data };
+    } catch (err) {
+      console.error('[Insforge] saveComments error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  /**
+   * Save single comment or reply.
+   */
+  async upsertComment(comment) {
+    if (!comment || !comment.id) return;
+    try {
+      const payload = {
+        id: String(comment.id),
+        video_id: comment.videoId ? String(comment.videoId) : 'VID001',
+        author: comment.author || 'User',
+        author_avatar: comment.authorAvatar || '',
+        text: comment.text || '',
+        likes: Number(comment.likes) || 0,
+        heart: Boolean(comment.heart),
+        user_liked: Boolean(comment.userLiked),
+        time: comment.time || 'Just now',
+        status: comment.status || 'Published',
+        replies: Array.isArray(comment.replies) ? comment.replies : []
+      };
+
+      const { data, error } = await insforge.database
+        .from('crm_comments')
+        .upsert(payload);
+
+      return { success: !error, data };
+    } catch (err) {
+      console.error('[Insforge] upsertComment error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  /**
+   * Delete comment from Insforge database.
+   */
+  async deleteComment(commentId) {
+    if (!commentId) return;
+    try {
+      const { data, error } = await insforge.database
+        .from('crm_comments')
+        .delete()
+        .eq('id', String(commentId));
+
+      return { success: !error, data };
+    } catch (err) {
+      console.error('[Insforge] deleteComment error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  /**
+   * Save playlists to Insforge crm_playlists table.
+   */
+  async savePlaylists(playlistsList) {
+    if (!Array.isArray(playlistsList) || playlistsList.length === 0) return;
+    try {
+      const records = playlistsList.map(p => ({
+        id: String(p.id),
+        title: p.title || 'Untitled Playlist',
+        video_count: Number(p.videoCount) || (Array.isArray(p.videos) ? p.videos.length : 0),
+        visibility: p.visibility || 'Public',
+        last_updated: p.lastUpdated || 'Just now',
+        videos: Array.isArray(p.videos) ? p.videos : []
+      }));
+
+      const { data, error } = await insforge.database
+        .from('crm_playlists')
+        .upsert(records);
+
+      if (error) console.warn('[Insforge] Batch upsert playlists error:', error);
+      return { success: !error, data };
+    } catch (err) {
+      console.error('[Insforge] savePlaylists error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  /**
+   * Delete playlist from Insforge database.
+   */
+  async deletePlaylist(playlistId) {
+    if (!playlistId) return;
+    try {
+      const { data, error } = await insforge.database
+        .from('crm_playlists')
+        .delete()
+        .eq('id', String(playlistId));
+
+      return { success: !error, data };
+    } catch (err) {
+      console.error('[Insforge] deletePlaylist error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  /**
+   * Save settings to Insforge crm_settings table.
+   */
+  async saveSettings(settings) {
+    if (!settings) return;
+    try {
+      const payload = {
+        key: 'app_settings',
+        currency: settings.currency || 'INR - Indian Rupee',
+        theme: settings.theme || 'Dark',
+        country: settings.country || 'United States',
+        keywords: settings.keywords || '',
+        default_visibility: settings.defaultVisibility || 'Public',
+        default_category: settings.defaultCategory || 'Entertainment',
+        blocked_words: settings.blockedWords || ''
+      };
+
+      const { data, error } = await insforge.database
+        .from('crm_settings')
+        .upsert(payload);
+
+      return { success: !error, data };
+    } catch (err) {
+      console.error('[Insforge] saveSettings error:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  /**
+   * Persist full snapshot to crm_state table and server endpoint.
    */
   async saveFullSnapshot(stateSnapshot) {
     try {

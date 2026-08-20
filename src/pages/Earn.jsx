@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore, formatINR } from '../store/useStore';
 import './Earn.css';
 
 const Earn = () => {
-  const { channelInfo, showToast } = useStore();
-  const [watchPageAds, setWatchPageAds] = useState(true);
-  const [shortsAds, setShortsAds] = useState(true);
-  const [memberships, setMemberships] = useState(true);
-  const [supers, setSupers] = useState(true);
-  const [shopping, setShopping] = useState(true);
+  const { channelInfo, earnConfig = {}, crmUpdateEarnConfig, showToast } = useStore();
+  const [watchPageAds, setWatchPageAds] = useState(earnConfig?.watchPageAds !== false);
+  const [shortsAds, setShortsAds] = useState(earnConfig?.shortsAds !== false);
+  const [memberships, setMemberships] = useState(earnConfig?.memberships !== false);
+  const [supers, setSupers] = useState(earnConfig?.supers !== false);
+  const [shopping, setShopping] = useState(earnConfig?.shopping !== false);
+
+  useEffect(() => {
+    if (earnConfig) {
+      if (earnConfig.watchPageAds !== undefined) setWatchPageAds(earnConfig.watchPageAds);
+      if (earnConfig.shortsAds !== undefined) setShortsAds(earnConfig.shortsAds);
+      if (earnConfig.memberships !== undefined) setMemberships(earnConfig.memberships);
+      if (earnConfig.supers !== undefined) setSupers(earnConfig.supers);
+      if (earnConfig.shopping !== undefined) setShopping(earnConfig.shopping);
+    }
+  }, [earnConfig]);
 
   return (
     <div className="dashboard-container earn-page">

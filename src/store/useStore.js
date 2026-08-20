@@ -81,7 +81,11 @@ const EMPTY_STATE = {
     currency: 'INR'
   },
   videos: PROCESSED_VIDEOS,
-  shorts: [],
+  shorts: [
+    { id: 'sh_01', title: 'Top 3 AI Agent Frameworks in 60s #shorts', views: 420000, likes: 38500, comments: 1240, remixes: 410, viewedPct: 78.4, swipedAwayPct: 21.6, publishDate: '2026-07-28', thumbnail: '/thumbnails/1.webp', visibility: 'Public' },
+    { id: 'sh_02', title: 'Never hardcode your API keys 💀 #coding', views: 890000, likes: 72000, comments: 2450, remixes: 890, viewedPct: 84.2, swipedAwayPct: 15.8, publishDate: '2026-07-15', thumbnail: '/thumbnails/2.webp', visibility: 'Public' },
+    { id: 'sh_03', title: 'Full Stack SaaS Architecture in 30 Seconds #systemdesign', views: 1250000, likes: 98000, comments: 4120, remixes: 1540, viewedPct: 89.1, swipedAwayPct: 10.9, publishDate: '2026-06-20', thumbnail: '/thumbnails/3.webp', visibility: 'Public' }
+  ],
   liveStreams: [],
   playlists: [
     { id: 'pl_01', title: 'AI & Autonomous Agents Masterclass', videoCount: 4, visibility: 'Public', lastUpdated: '3 days ago' },
@@ -98,19 +102,36 @@ const EMPTY_STATE = {
     id: `sub_${v.id}`,
     videoId: v.id,
     videoTitle: v.title,
-    languages: ['English (Automatic)'],
+    languages: ['English (Automatic)', 'Hindi', 'Spanish'],
     modified: v.publishDate,
     titleDescriptionState: 'Published',
     subtitlesState: 'Published'
   })),
-  copyrightClaims: [],
+  copyrightClaims: [
+    { id: 'cc_01', videoTitle: 'AI Blogging Course in 2026', matchingVideoTitle: 'Royalty Background Lo-Fi Ambient', matchingChannel: 'Lofi Records Global', matchPercent: '12%', segment: '04:12 - 05:48', dateDetected: 'Jul 24, 2026', views: 529000, status: 'Active (No penalty)' },
+    { id: 'cc_02', videoTitle: 'Long AI Video Kaise Banaye', matchingVideoTitle: 'Cyberpunk Synth Instrumental', matchingChannel: 'RetroWave Music', matchPercent: '8%', segment: '11:20 - 12:15', dateDetected: 'Aug 02, 2026', views: 892000, status: 'Resolved' }
+  ],
   audioTracks: [
     { id: 'track_1', title: 'Synthwave Dreams', artist: 'Axiom Audio', duration: '3:45', genre: 'Electronic', mood: 'Dramatic', starred: true },
-    { id: 'track_2', title: 'Lofi Study Beats', artist: 'Chillhop Lab', duration: '2:30', genre: 'Lofi', mood: 'Calm', starred: false }
+    { id: 'track_2', title: 'Lofi Study Beats', artist: 'Chillhop Lab', duration: '2:30', genre: 'Lofi', mood: 'Calm', starred: false },
+    { id: 'track_3', title: 'Deep Focus Ambient', artist: 'Zenith Labs', duration: '4:12', genre: 'Ambient', mood: 'Calm', starred: true },
+    { id: 'track_4', title: 'Epic Cinematic Rise', artist: 'Audiomachine', duration: '2:55', genre: 'Cinematic', mood: 'Dramatic', starred: false }
   ],
   notifications: [
-    { id: 'n_1', title: 'System Design video reached 2.8M views!', message: 'Your video is trending #1 in Tech.', time: '1 hour ago', read: false }
+    { id: 'n_1', title: 'System Design video reached 2.8M views!', message: 'Your video is trending #1 in Tech.', time: '1 hour ago', read: false },
+    { id: 'n_2', title: 'New milestone: 400,000 Subscribers!', message: 'Congratulations on reaching 400K subscribers!', time: '1 day ago', read: false }
   ],
+  earnConfig: {
+    yppStatus: 'Active Partner',
+    watchPageAds: true,
+    shortsAds: true,
+    memberships: true,
+    supers: true,
+    shopping: true,
+    subscribersTarget: 1000,
+    watchHoursTarget: 4000,
+    shortsViewsTarget: 10000000
+  },
   spreadsheetWarnings: [],
   settings: {
     currency: 'INR - Indian Rupee',
@@ -119,6 +140,89 @@ const EMPTY_STATE = {
     keywords: 'AI, Autonomous Agents, Software Engineering, React, Node.js, System Design',
     defaultVisibility: 'Public',
     defaultCategory: 'Science & Technology'
+  },
+  trafficSourcesCustom: [
+    { source: 'Browse Features', percentage: 42.5 },
+    { source: 'Suggested Videos', percentage: 28.3 },
+    { source: 'YouTube Search', percentage: 14.2 },
+    { source: 'External', percentage: 6.4 },
+    { source: 'Notifications', percentage: 4.1 },
+    { source: 'Playlists', percentage: 2.5 },
+    { source: 'Channel Pages', percentage: 1.2 },
+    { source: 'Shorts Feed', percentage: 0.8 }
+  ],
+  searchTermsCustom: [
+    { term: 'ai video maker', percentage: 24.5 },
+    { term: 'kids cartoon animation', percentage: 18.2 },
+    { term: 'how to create ai videos', percentage: 15.6 },
+    { term: 'autonomous agents tutorial', percentage: 12.3 },
+    { term: 'faceless youtube channel', percentage: 9.8 }
+  ],
+  externalSourcesCustom: [
+    { source: 'Google Search', percentage: 46.2 },
+    { source: 'WhatsApp', percentage: 22.8 },
+    { source: 'Reddit', percentage: 14.5 },
+    { source: 'Instagram', percentage: 9.3 },
+    { source: 'Twitter / X', percentage: 7.2 }
+  ],
+  audienceCustom: {
+    returningViewers: 34.2,
+    newViewers: 65.8,
+    uniqueViewersCount: 840000,
+    subscribedWatchTimePct: 41.5,
+    nonSubscribedWatchTimePct: 58.5,
+    geographies: [
+      { country: 'United States', percentage: 38.5, rpm: 48.20 },
+      { country: 'Canada', percentage: 11.2, rpm: 42.50 },
+      { country: 'United Kingdom', percentage: 9.8, rpm: 39.80 },
+      { country: 'Germany', percentage: 8.4, rpm: 38.10 },
+      { country: 'Australia', percentage: 6.5, rpm: 41.00 },
+      { country: 'India', percentage: 14.2, rpm: 4.20 },
+      { country: 'Philippines', percentage: 4.8, rpm: 5.10 },
+      { country: 'Brazil', percentage: 4.0, rpm: 6.50 }
+    ],
+    ageGender: [
+      { group: '18–24 years', percentage: 22.4, male: 74, female: 26 },
+      { group: '25–34 years', percentage: 48.6, male: 76, female: 24 },
+      { group: '35–44 years', percentage: 18.2, male: 72, female: 28 },
+      { group: '45–54 years', percentage: 7.1, male: 70, female: 30 },
+      { group: '55+ years', percentage: 3.7, male: 68, female: 32 }
+    ],
+    subtitleLanguages: [
+      { language: 'English (Original)', percentage: 76.5 },
+      { language: 'Spanish', percentage: 8.2 },
+      { language: 'Hindi', percentage: 6.4 },
+      { language: 'German', percentage: 4.1 },
+      { language: 'No subtitles/CC', percentage: 4.8 }
+    ]
+  },
+  revenueCustom: {
+    monthlyRevenue: [
+      { month: 'August 2026', revenue: 42050.00, formatted: '₹42,050.00' },
+      { month: 'July 2026', revenue: 68420.00, formatted: '₹68,420.00' },
+      { month: 'June 2026', revenue: 59310.00, formatted: '₹59,310.00' },
+      { month: 'May 2026', revenue: 54100.00, formatted: '₹54,100.00' },
+      { month: 'April 2026', revenue: 61850.00, formatted: '₹61,850.00' },
+      { month: 'March 2026', revenue: 49200.00, formatted: '₹49,200.00' }
+    ],
+    revenueStreams: [
+      { stream: 'Watch Page Ads', percentage: 84.5 },
+      { stream: 'YouTube Premium', percentage: 9.2 },
+      { stream: 'Channel Memberships', percentage: 4.1 },
+      { stream: 'Super Chat & Stickers', percentage: 2.2 }
+    ],
+    adTypes: [
+      { type: 'Skippable video ads', percentage: 68.4 },
+      { type: 'Non-skippable ads', percentage: 19.2 },
+      { type: 'Bumper ads', percentage: 8.1 },
+      { type: 'Display / Overlay ads', percentage: 4.3 }
+    ]
+  },
+  realtimeCustom: {
+    liveSubsDelta: 0,
+    speedMultiplier: 1.0,
+    override48h: null,
+    override60m: null
   },
   analytics: {
     daily: INITIAL_LAST28_DAILY,
@@ -169,6 +273,12 @@ function applySpreadsheetData(data) {
     audioTracks: data.audioTracks || EMPTY_STATE.audioTracks,
     notifications: data.notifications || EMPTY_STATE.notifications,
     settings: data.settings || EMPTY_STATE.settings,
+    trafficSourcesCustom: data.trafficSourcesCustom || EMPTY_STATE.trafficSourcesCustom,
+    searchTermsCustom: data.searchTermsCustom || EMPTY_STATE.searchTermsCustom,
+    externalSourcesCustom: data.externalSourcesCustom || EMPTY_STATE.externalSourcesCustom,
+    audienceCustom: data.audienceCustom || EMPTY_STATE.audienceCustom,
+    revenueCustom: data.revenueCustom || EMPTY_STATE.revenueCustom,
+    realtimeCustom: data.realtimeCustom || EMPTY_STATE.realtimeCustom,
     analytics: data.analytics || EMPTY_STATE.analytics,
     engine: data.engine || EMPTY_STATE.engine,
     spreadsheetWarnings: data.warnings || []
@@ -227,12 +337,36 @@ export const useStore = create(
             if (res.videos && res.videos.length > 0) {
               updates.videos = res.videos;
             }
+            if (res.comments && res.comments.length > 0) {
+              updates.comments = res.comments;
+            }
+            if (res.playlists && res.playlists.length > 0) {
+              updates.playlists = res.playlists;
+            }
+            if (res.settings) {
+              updates.settings = { ...curState.settings, ...res.settings };
+            }
+            if (res.subtitles && res.subtitles.length > 0) {
+              updates.subtitles = res.subtitles;
+            }
+            if (res.audioTracks && res.audioTracks.length > 0) {
+              updates.audioTracks = res.audioTracks;
+            }
             if (res.stateData) {
               if (res.stateData.channelInfo) {
                 updates.channelInfo = { ...curState.channelInfo, ...updates.channelInfo, ...res.stateData.channelInfo };
               }
               if (res.stateData.videos && res.stateData.videos.length > 0) {
                 updates.videos = res.stateData.videos;
+              }
+              if (res.stateData.comments && res.stateData.comments.length > 0) {
+                updates.comments = res.stateData.comments;
+              }
+              if (res.stateData.playlists && res.stateData.playlists.length > 0) {
+                updates.playlists = res.stateData.playlists;
+              }
+              if (res.stateData.settings) {
+                updates.settings = { ...curState.settings, ...updates.settings, ...res.stateData.settings };
               }
             }
             set({
@@ -267,9 +401,23 @@ export const useStore = create(
           if (state.videos && state.videos.length > 0) {
             await InsforgeService.saveAllVideos(state.videos);
           }
+          if (state.comments && state.comments.length > 0) {
+            await InsforgeService.saveComments(state.comments);
+          }
+          if (state.playlists && state.playlists.length > 0) {
+            await InsforgeService.savePlaylists(state.playlists);
+          }
+          if (state.settings) {
+            await InsforgeService.saveSettings(state.settings);
+          }
           await InsforgeService.saveFullSnapshot({
             channelInfo: state.channelInfo,
             videos: state.videos,
+            comments: state.comments,
+            playlists: state.playlists,
+            settings: state.settings,
+            subtitles: state.subtitles,
+            audioTracks: state.audioTracks,
             savedAt: new Date().toISOString()
           });
           set({ lastDatabaseSync: new Date().toISOString(), isDatabaseConnected: true });
@@ -530,8 +678,32 @@ export const useStore = create(
             rpm:                     finalViews > 0 ? parseFloat(((finalRevenue / finalViews) * 1000).toFixed(2)) : (agg.rpm || 33.64),
             cpm:                     agg.cpm || 58.00,
           },
-          trafficSources: getTrafficSources(finalViews),
-          audience:       getAudienceBreakdown(finalViews),
+          trafficSources: state.trafficSourcesCustom && state.trafficSourcesCustom.length > 0
+            ? state.trafficSourcesCustom.map(t => ({
+                ...t,
+                views: Math.round(finalViews * (t.percentage / 100))
+              }))
+            : getTrafficSources(finalViews),
+          searchTerms: state.searchTermsCustom || [],
+          externalSources: state.externalSourcesCustom || [],
+          audience: state.audienceCustom
+            ? {
+                ...getAudienceBreakdown(finalViews),
+                geographies: (state.audienceCustom.geographies || []).map(g => ({
+                  ...g,
+                  views: Math.round(finalViews * (g.percentage / 100))
+                })),
+                ageGender: state.audienceCustom.ageGender || [],
+                subtitleLanguages: state.audienceCustom.subtitleLanguages || [],
+                viewerWatchBehavior: [
+                  { type: 'Returning viewers', percentage: state.audienceCustom.returningViewers || 34.2, description: 'Viewers who watched your channel before and returned' },
+                  { type: 'New viewers', percentage: state.audienceCustom.newViewers || 65.8, description: 'Viewers who watched your channel for the first time' }
+                ],
+                subscribedWatchTimePct: state.audienceCustom.subscribedWatchTimePct || 41.5,
+                nonSubscribedWatchTimePct: state.audienceCustom.nonSubscribedWatchTimePct || 58.5
+              }
+            : getAudienceBreakdown(finalViews),
+          revenueBreakdown: state.revenueCustom || {}
         };
       },
 
@@ -996,11 +1168,418 @@ export const useStore = create(
         get().persistToDatabase();
       },
 
-      crmImportState: (newState) => set((state) => ({
-        ...state,
-        ...newState,
-        hasCrmOverrides: true
-      })),
+      // ─── Extended CRM Actions ──────────────────────────────────────────
+      crmAddComment: (commentData) => {
+        set((state) => {
+          const newComment = {
+            id: commentData.id || `c_${Date.now()}`,
+            videoId: commentData.videoId || (state.videos[0]?.id || 'VID001'),
+            author: commentData.author || 'Viewer',
+            authorAvatar: commentData.authorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(commentData.author || 'Viewer')}&background=random`,
+            text: commentData.text || '',
+            likes: Number(commentData.likes) || 0,
+            heart: Boolean(commentData.heart),
+            userLiked: Boolean(commentData.userLiked),
+            time: commentData.time || 'Just now',
+            status: commentData.status || 'Published',
+            replies: commentData.replies || []
+          };
+          return {
+            comments: [newComment, ...state.comments],
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmUpdateComment: (id, updates) => {
+        set((state) => ({
+          comments: state.comments.map(c => c.id === id ? { ...c, ...updates } : c),
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmDeleteComment: (id) => {
+        set((state) => ({
+          comments: state.comments.filter(c => c.id !== id),
+          hasCrmOverrides: true
+        }));
+        InsforgeService.deleteComment(id);
+      },
+
+      crmAddPlaylist: (playlistData) => {
+        set((state) => {
+          const newPl = {
+            id: playlistData.id || `pl_${Date.now()}`,
+            title: playlistData.title || 'New Playlist',
+            videoCount: Number(playlistData.videoCount) || 0,
+            visibility: playlistData.visibility || 'Public',
+            lastUpdated: playlistData.lastUpdated || 'Just now',
+            videos: playlistData.videos || []
+          };
+          return {
+            playlists: [newPl, ...state.playlists],
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmUpdatePlaylist: (id, updates) => {
+        set((state) => ({
+          playlists: state.playlists.map(p => p.id === id ? { ...p, ...updates } : p),
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmDeletePlaylist: (id) => {
+        set((state) => ({
+          playlists: state.playlists.filter(p => p.id !== id),
+          hasCrmOverrides: true
+        }));
+        InsforgeService.deletePlaylist(id);
+      },
+
+      crmUpdateSettings: (updates) => {
+        set((state) => ({
+          settings: { ...state.settings, ...updates },
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmAddVideo: (newVid) => {
+        set((state) => {
+          const id = newVid.id || `VID${(state.videos.length + 1).toString().padStart(3, '0')}`;
+          const views = Number(newVid.views) || 100000;
+          const rpm = Number(newVid.rpm) || 33.64;
+          const durationSecs = newVid.durationSecs || 600;
+          const avgViewDurationSecs = newVid.avgViewDurationSecs || 180;
+          const revenue = Number(((views / 1000) * rpm).toFixed(2));
+          const watchTimeHrs = Number(((views * avgViewDurationSecs) / 3600).toFixed(1));
+          const subscribersGained = newVid.subscribersGained !== undefined ? Number(newVid.subscribersGained) : Math.round(views * 0.014);
+
+          const fullVid = {
+            id,
+            title: newVid.title || 'Untitled Video',
+            description: newVid.description || '',
+            thumbnail: newVid.thumbnail || '/thumbnails/1.webp',
+            duration: newVid.duration || formatSecondsToAvd(durationSecs),
+            durationSecs,
+            avgViewDuration: newVid.avgViewDuration || formatSecondsToAvd(avgViewDurationSecs),
+            avgViewDurationSecs,
+            views,
+            viewsFormatted: fmtV(views),
+            rpm,
+            cpm: Number((rpm * 1.72).toFixed(2)),
+            revenue,
+            revenueFormatted: formatINR(revenue),
+            watchTimeHrs,
+            watchTimeHrsFormatted: `${fmtW(watchTimeHrs)} hrs`,
+            subscribersGained,
+            subscribersLost: 0,
+            netSubscribers: subscribersGained,
+            likes: newVid.likes !== undefined ? Number(newVid.likes) : Math.round(views * 0.046),
+            comments: newVid.comments !== undefined ? Number(newVid.comments) : Math.round(views * 0.0034),
+            shares: Math.round(views * 0.008),
+            ctr: newVid.ctr || 8.5,
+            publishDate: newVid.publishDate || new Date().toISOString().split('T')[0],
+            category: newVid.category || 'Entertainment',
+            visibility: newVid.visibility || 'Public',
+            monetization: newVid.monetization || 'On'
+          };
+
+          const updatedVideos = [fullVid, ...state.videos];
+          const totalViews = updatedVideos.reduce((acc, v) => acc + (Number(v.views) || 0), 0);
+          const totalRevenue = updatedVideos.reduce((acc, v) => acc + (v.revenue != null ? Number(v.revenue) : ((Number(v.views) || 0) / 1000 * (Number(v.rpm) || 33.64))), 0);
+          const totalWatch = updatedVideos.reduce((acc, v) => acc + (v.watchTimeHrs != null ? Number(v.watchTimeHrs) : ((Number(v.views) || 0) * (Number(v.avgViewDurationSecs) || 105) / 3600)), 0);
+
+          return {
+            videos: updatedVideos,
+            channelInfo: {
+              ...state.channelInfo,
+              totalViews,
+              lifetimeViewsFormatted: fmtV(totalViews),
+              totalRevenue,
+              totalRevenueFormatted: formatINR(totalRevenue),
+              viewsLast28Days: totalViews,
+              viewsLast28DaysFormatted: fmtV(totalViews),
+              watchTimeLast28Days: parseFloat(totalWatch.toFixed(1)),
+              watchTimeLast28DaysFormatted: fmtW(totalWatch),
+              revenueLast28Days: parseFloat(totalRevenue.toFixed(2)),
+              revenueLast28DaysFormatted: formatINR(totalRevenue)
+            },
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmDeleteVideo: (id) => {
+        set((state) => {
+          const updatedVideos = state.videos.filter(v => v.id !== id && String(v.id) !== String(id));
+          const totalViews = updatedVideos.reduce((acc, v) => acc + (Number(v.views) || 0), 0);
+          const totalRevenue = updatedVideos.reduce((acc, v) => acc + (v.revenue != null ? Number(v.revenue) : ((Number(v.views) || 0) / 1000 * (Number(v.rpm) || 33.64))), 0);
+          const totalWatch = updatedVideos.reduce((acc, v) => acc + (v.watchTimeHrs != null ? Number(v.watchTimeHrs) : ((Number(v.views) || 0) * (Number(v.avgViewDurationSecs) || 105) / 3600)), 0);
+
+          return {
+            videos: updatedVideos,
+            channelInfo: {
+              ...state.channelInfo,
+              totalViews,
+              lifetimeViewsFormatted: fmtV(totalViews),
+              totalRevenue,
+              totalRevenueFormatted: formatINR(totalRevenue),
+              viewsLast28Days: totalViews,
+              viewsLast28DaysFormatted: fmtV(totalViews),
+              watchTimeLast28Days: parseFloat(totalWatch.toFixed(1)),
+              watchTimeLast28DaysFormatted: fmtW(totalWatch),
+              revenueLast28Days: parseFloat(totalRevenue.toFixed(2)),
+              revenueLast28DaysFormatted: formatINR(totalRevenue)
+            },
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmDuplicateVideo: (id) => {
+        set((state) => {
+          const target = state.videos.find(v => v.id === id || String(v.id) === String(id));
+          if (!target) return state;
+          const clonedId = `VID${Date.now().toString().slice(-4)}`;
+          const cloned = {
+            ...target,
+            id: clonedId,
+            title: `${target.title} (Copy)`,
+            publishDate: new Date().toISOString().split('T')[0]
+          };
+          const updatedVideos = [cloned, ...state.videos];
+          return {
+            videos: updatedVideos,
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmUpdateTrafficSources: (customList) => {
+        set({ trafficSourcesCustom: customList, hasCrmOverrides: true });
+        get().persistToDatabase();
+      },
+
+      crmUpdateSearchTerms: (terms) => {
+        set({ searchTermsCustom: terms, hasCrmOverrides: true });
+        get().persistToDatabase();
+      },
+
+      crmUpdateExternalSources: (sources) => {
+        set({ externalSourcesCustom: sources, hasCrmOverrides: true });
+        get().persistToDatabase();
+      },
+
+      crmUpdateAudience: (audienceData) => {
+        set((state) => ({
+          audienceCustom: { ...(state.audienceCustom || {}), ...audienceData },
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmUpdateRevenueCustom: (revenueData) => {
+        set((state) => ({
+          revenueCustom: { ...(state.revenueCustom || {}), ...revenueData },
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmUpdateRealtimeConfig: (realtimeConfig) => {
+        set((state) => ({
+          realtimeCustom: { ...(state.realtimeCustom || {}), ...realtimeConfig },
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmAddShort: (shortData) => {
+        set((state) => {
+          const id = shortData.id || `sh_${Date.now()}`;
+          const newShort = {
+            id,
+            title: shortData.title || 'New Short',
+            views: Number(shortData.views) || 50000,
+            likes: Number(shortData.likes) || 2500,
+            comments: Number(shortData.comments) || 120,
+            remixes: Number(shortData.remixes) || 45,
+            viewedPct: Number(shortData.viewedPct) || 75.0,
+            swipedAwayPct: Number(shortData.swipedAwayPct) || 25.0,
+            publishDate: shortData.publishDate || new Date().toISOString().split('T')[0],
+            thumbnail: shortData.thumbnail || '/thumbnails/1.webp',
+            visibility: shortData.visibility || 'Public'
+          };
+          return {
+            shorts: [newShort, ...state.shorts],
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmUpdateShort: (id, updates) => {
+        set((state) => ({
+          shorts: state.shorts.map(s => s.id === id ? { ...s, ...updates } : s),
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmDeleteShort: (id) => {
+        set((state) => ({
+          shorts: state.shorts.filter(s => s.id !== id),
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmAddCopyrightClaim: (claimData) => {
+        set((state) => {
+          const id = claimData.id || `cc_${Date.now()}`;
+          const newClaim = {
+            id,
+            videoTitle: claimData.videoTitle || 'Video',
+            matchingVideoTitle: claimData.matchingVideoTitle || 'Audio Track',
+            matchingChannel: claimData.matchingChannel || 'Music Label',
+            matchPercent: claimData.matchPercent || '10%',
+            segment: claimData.segment || '01:00 - 02:00',
+            dateDetected: claimData.dateDetected || 'Today',
+            views: Number(claimData.views) || 100000,
+            status: claimData.status || 'Active (No penalty)'
+          };
+          return {
+            copyrightClaims: [newClaim, ...state.copyrightClaims],
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmDeleteCopyrightClaim: (id) => {
+        set((state) => ({
+          copyrightClaims: state.copyrightClaims.filter(c => c.id !== id),
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmAddAudioTrack: (trackData) => {
+        set((state) => {
+          const id = trackData.id || `track_${Date.now()}`;
+          const newTrack = {
+            id,
+            title: trackData.title || 'New Audio Track',
+            artist: trackData.artist || 'Axiom Records',
+            duration: trackData.duration || '3:30',
+            genre: trackData.genre || 'Electronic',
+            mood: trackData.mood || 'Bright',
+            starred: Boolean(trackData.starred)
+          };
+          return {
+            audioTracks: [newTrack, ...state.audioTracks],
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmDeleteAudioTrack: (id) => {
+        set((state) => ({
+          audioTracks: state.audioTracks.filter(t => t.id !== id),
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmAddSubtitleTrack: (subData) => {
+        set((state) => {
+          const id = subData.id || `sub_${Date.now()}`;
+          const newSub = {
+            id,
+            videoId: subData.videoId || state.videos[0]?.id || 'VID001',
+            videoTitle: subData.videoTitle || state.videos[0]?.title || 'Video Title',
+            languages: subData.languages || ['English', 'Hindi'],
+            modified: subData.modified || new Date().toISOString().split('T')[0],
+            titleDescriptionState: subData.titleDescriptionState || 'Published',
+            subtitlesState: subData.subtitlesState || 'Published'
+          };
+          return {
+            subtitles: [newSub, ...state.subtitles],
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmUpdateSubtitleTrack: (id, updates) => {
+        set((state) => ({
+          subtitles: state.subtitles.map(s => s.id === id ? { ...s, ...updates } : s),
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmDeleteSubtitleTrack: (id) => {
+        set((state) => ({
+          subtitles: state.subtitles.filter(s => s.id !== id),
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmAddNotification: (notifData) => {
+        set((state) => {
+          const id = notifData.id || `n_${Date.now()}`;
+          const newNotif = {
+            id,
+            title: notifData.title || 'Studio Notification',
+            message: notifData.message || '',
+            time: notifData.time || 'Just now',
+            read: false
+          };
+          return {
+            notifications: [newNotif, ...state.notifications],
+            hasCrmOverrides: true
+          };
+        });
+        get().persistToDatabase();
+      },
+
+      crmDeleteNotification: (id) => {
+        set((state) => ({
+          notifications: state.notifications.filter(n => n.id !== id),
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmUpdateEarnConfig: (updates) => {
+        set((state) => ({
+          earnConfig: { ...(state.earnConfig || {}), ...updates },
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
+
+      crmImportState: (newState) => {
+        set((state) => ({
+          ...state,
+          ...newState,
+          hasCrmOverrides: true
+        }));
+        get().persistToDatabase();
+      },
 
       reloadFromSpreadsheet: () => {
         set({ hasCrmOverrides: false });
@@ -1050,7 +1629,21 @@ export const useStore = create(
         dateRangeVersion: state.dateRangeVersion,
         hasCrmOverrides: state.hasCrmOverrides,
         channelInfo: state.channelInfo,
-        videos: state.videos
+        videos: state.videos,
+        shorts: state.shorts,
+        comments: state.comments,
+        playlists: state.playlists,
+        subtitles: state.subtitles,
+        copyrightClaims: state.copyrightClaims,
+        audioTracks: state.audioTracks,
+        notifications: state.notifications,
+        earnConfig: state.earnConfig,
+        trafficSourcesCustom: state.trafficSourcesCustom,
+        searchTermsCustom: state.searchTermsCustom,
+        externalSourcesCustom: state.externalSourcesCustom,
+        audienceCustom: state.audienceCustom,
+        revenueCustom: state.revenueCustom,
+        realtimeCustom: state.realtimeCustom
       })
     }
   )

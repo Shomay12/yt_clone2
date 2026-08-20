@@ -115,12 +115,28 @@ const CRMInput = ({ label, value, onChange, type = 'number', min, max, step = 1,
 export default function CRM() {
   const {
     channelInfo, videos,
+    shorts = [], comments = [], playlists = [], settings = {}, subtitles = [], audioTracks = [],
+    copyrightClaims = [], notifications = [], earnConfig = {},
+    trafficSourcesCustom = [], searchTermsCustom = [], externalSourcesCustom = [],
+    audienceCustom = {}, revenueCustom = {}, realtimeCustom = {},
     simulationAnchorDate, selectedDateRange, customStartDate, customEndDate,
     setSimulationAnchorDate, setDateRange,
     crmUpdateChannelMetrics, updateVideoMetrics,
     bulkSetVideoRPM, bulkMultiplyViews,
     crmApplyPreset, reloadFromSpreadsheet,
-    loadFromDatabase, isDatabaseLoading, isDatabaseConnected, lastDatabaseSync,
+    crmAddComment, crmUpdateComment, crmDeleteComment,
+    crmAddPlaylist, crmUpdatePlaylist, crmDeletePlaylist,
+    crmUpdateSettings, crmImportState,
+    crmAddVideo, crmDeleteVideo, crmDuplicateVideo,
+    crmAddShort, crmUpdateShort, crmDeleteShort,
+    crmAddCopyrightClaim, crmDeleteCopyrightClaim,
+    crmAddAudioTrack, crmDeleteAudioTrack,
+    crmAddSubtitleTrack, crmUpdateSubtitleTrack, crmDeleteSubtitleTrack,
+    crmAddNotification, crmDeleteNotification,
+    crmUpdateEarnConfig,
+    crmUpdateTrafficSources, crmUpdateSearchTerms, crmUpdateExternalSources,
+    crmUpdateAudience, crmUpdateRevenueCustom, crmUpdateRealtimeConfig,
+    loadFromDatabase, persistToDatabase, isDatabaseLoading, isDatabaseConnected, lastDatabaseSync,
     showToast
   } = useStore();
 
@@ -130,6 +146,228 @@ export default function CRM() {
   const [editBuf, setEditBuf] = useState({});
   const [bulkRPM, setBulkRPM] = useState(33.64);
   const [bulkFactor, setBulkFactor] = useState(1.0);
+
+  // New Video Creation Draft State
+  const [newVideoDraft, setNewVideoDraft] = useState({
+    title: '',
+    description: '',
+    thumbnail: '/thumbnails/1.webp',
+    duration: '10:15',
+    durationSecs: 615,
+    avgViewDuration: '3:45',
+    avgViewDurationSecs: 225,
+    views: 250000,
+    rpm: 33.64,
+    ctr: 8.5,
+    likes: 11500,
+    comments: 850,
+    category: 'Entertainment',
+    visibility: 'Public',
+    monetization: 'On'
+  });
+
+  // Shorts Manager State
+  const [newShortDraft, setNewShortDraft] = useState({
+    title: '',
+    views: 350000,
+    likes: 24000,
+    comments: 850,
+    remixes: 320,
+    viewedPct: 82.5,
+    swipedAwayPct: 17.5,
+    thumbnail: '/thumbnails/1.webp',
+    visibility: 'Public'
+  });
+
+  // Copyright Claims State
+  const [newClaimDraft, setNewClaimDraft] = useState({
+    videoTitle: videos[0]?.title || 'AI Course',
+    matchingVideoTitle: 'Royalty Ambient Sound',
+    matchingChannel: 'Global Sound Lab',
+    matchPercent: '15%',
+    segment: '02:10 - 03:45',
+    views: 250000,
+    status: 'Active (No penalty)'
+  });
+
+  // Audio Library State
+  const [newAudioDraft, setNewAudioDraft] = useState({
+    title: '',
+    artist: 'Axiom Audio',
+    duration: '3:20',
+    genre: 'Electronic',
+    mood: 'Bright',
+    starred: false
+  });
+
+  // Subtitles & Translations State
+  const [newSubDraft, setNewSubDraft] = useState({
+    videoId: videos[0]?.id || 'VID001',
+    videoTitle: videos[0]?.title || 'Video Title',
+    languagesStr: 'English, Hindi, Spanish',
+    titleDescriptionState: 'Published',
+    subtitlesState: 'Published'
+  });
+
+  // Studio Notifications State
+  const [newNotifDraft, setNewNotifDraft] = useState({
+    title: '',
+    message: '',
+    time: 'Just now'
+  });
+
+  // Earn & Monetization State
+  const [earnDraft, setEarnDraft] = useState({
+    yppStatus: earnConfig?.yppStatus || 'Active Partner',
+    watchPageAds: earnConfig?.watchPageAds !== false,
+    shortsAds: earnConfig?.shortsAds !== false,
+    memberships: earnConfig?.memberships !== false,
+    supers: earnConfig?.supers !== false,
+    shopping: earnConfig?.shopping !== false,
+    subscribersTarget: earnConfig?.subscribersTarget || 1000,
+    watchHoursTarget: earnConfig?.watchHoursTarget || 4000,
+    shortsViewsTarget: earnConfig?.shortsViewsTarget || 10000000
+  });
+
+  useEffect(() => {
+    if (earnConfig) {
+      setEarnDraft({
+        yppStatus: earnConfig.yppStatus || 'Active Partner',
+        watchPageAds: earnConfig.watchPageAds !== false,
+        shortsAds: earnConfig.shortsAds !== false,
+        memberships: earnConfig.memberships !== false,
+        supers: earnConfig.supers !== false,
+        shopping: earnConfig.shopping !== false,
+        subscribersTarget: earnConfig.subscribersTarget || 1000,
+        watchHoursTarget: earnConfig.watchHoursTarget || 4000,
+        shortsViewsTarget: earnConfig.shortsViewsTarget || 10000000
+      });
+    }
+  }, [earnConfig]);
+
+  // Traffic Sources Modulation State
+  const [trafficDraft, setTrafficDraft] = useState(trafficSourcesCustom || []);
+  const [searchTermsDraft, setSearchTermsDraft] = useState(searchTermsCustom || []);
+  const [externalSourcesDraft, setExternalSourcesDraft] = useState(externalSourcesCustom || []);
+  const [newSearchTerm, setNewSearchTerm] = useState({ term: '', percentage: 10 });
+  const [newExternalSource, setNewExternalSource] = useState({ source: '', percentage: 10 });
+
+  // Audience Modulation State
+  const [audienceDraft, setAudienceDraft] = useState({
+    returningViewers: audienceCustom?.returningViewers || 34.2,
+    newViewers: audienceCustom?.newViewers || 65.8,
+    uniqueViewersCount: audienceCustom?.uniqueViewersCount || 840000,
+    subscribedWatchTimePct: audienceCustom?.subscribedWatchTimePct || 41.5,
+    nonSubscribedWatchTimePct: audienceCustom?.nonSubscribedWatchTimePct || 58.5,
+    geographies: audienceCustom?.geographies || [
+      { country: 'United States', percentage: 38.5, rpm: 48.20 },
+      { country: 'Canada', percentage: 11.2, rpm: 42.50 },
+      { country: 'United Kingdom', percentage: 9.8, rpm: 39.80 },
+      { country: 'Germany', percentage: 8.4, rpm: 38.10 },
+      { country: 'Australia', percentage: 6.5, rpm: 41.00 },
+      { country: 'India', percentage: 14.2, rpm: 4.20 },
+      { country: 'Brazil', percentage: 4.0, rpm: 6.50 }
+    ],
+    ageGender: audienceCustom?.ageGender || [
+      { group: '18–24 years', percentage: 22.4, male: 74, female: 26 },
+      { group: '25–34 years', percentage: 48.6, male: 76, female: 24 },
+      { group: '35–44 years', percentage: 18.2, male: 72, female: 28 },
+      { group: '45–54 years', percentage: 7.1, male: 70, female: 30 },
+      { group: '55+ years', percentage: 3.7, male: 68, female: 32 }
+    ]
+  });
+  const [newCountry, setNewCountry] = useState({ country: '', percentage: 5.0, rpm: 35.00 });
+
+  // Revenue Modulation State
+  const [revenueDraft, setRevenueDraft] = useState({
+    monthlyRevenue: revenueCustom?.monthlyRevenue || [
+      { month: 'August 2026', revenue: 42050.00, formatted: '₹42,050.00' },
+      { month: 'July 2026', revenue: 68420.00, formatted: '₹68,420.00' },
+      { month: 'June 2026', revenue: 59310.00, formatted: '₹59,310.00' },
+      { month: 'May 2026', revenue: 54100.00, formatted: '₹54,100.00' },
+      { month: 'April 2026', revenue: 61850.00, formatted: '₹61,850.00' },
+      { month: 'March 2026', revenue: 49200.00, formatted: '₹49,200.00' }
+    ],
+    revenueStreams: revenueCustom?.revenueStreams || [
+      { stream: 'Watch Page Ads', percentage: 84.5 },
+      { stream: 'YouTube Premium', percentage: 9.2 },
+      { stream: 'Channel Memberships', percentage: 4.1 },
+      { stream: 'Super Chat & Stickers', percentage: 2.2 }
+    ],
+    adTypes: revenueCustom?.adTypes || [
+      { type: 'Skippable video ads', percentage: 68.4 },
+      { type: 'Non-skippable ads', percentage: 19.2 },
+      { type: 'Bumper ads', percentage: 8.1 },
+      { type: 'Display / Overlay ads', percentage: 4.3 }
+    ]
+  });
+
+  // Realtime & Live Ticker State
+  const [realtimeDraft, setRealtimeDraft] = useState({
+    liveSubsDelta: realtimeCustom?.liveSubsDelta || 0,
+    speedMultiplier: realtimeCustom?.speedMultiplier || 1.0,
+    override48h: realtimeCustom?.override48h || '',
+    override60m: realtimeCustom?.override60m || ''
+  });
+
+  // Extended CRM: Comments Management State
+  const [commentFilter, setCommentFilter] = useState('All');
+  const [commentSearch, setCommentSearch] = useState('');
+  const [newCommentDraft, setNewCommentDraft] = useState({
+    author: '',
+    text: '',
+    videoId: videos[0]?.id || 'VID001',
+    likes: 0,
+    heart: false,
+    status: 'Published'
+  });
+  const [replyDrafts, setReplyDrafts] = useState({});
+
+  // Extended CRM: Playlists Management State
+  const [newPlaylistDraft, setNewPlaylistDraft] = useState({
+    title: '',
+    visibility: 'Public',
+    videoCount: 0
+  });
+
+  // Extended CRM: Settings & Branding State
+  const [settingsDraft, setSettingsDraft] = useState({
+    name: channelInfo?.name || 'Kids Toon',
+    handle: channelInfo?.handle || '@kidstoon',
+    avatar: channelInfo?.avatar || '/channel-avatar.png',
+    banner: channelInfo?.banner || '',
+    country: channelInfo?.country || 'United States',
+    currency: settings?.currency || 'INR - Indian Rupee',
+    theme: settings?.theme || 'Dark',
+    defaultVisibility: settings?.defaultVisibility || 'Public',
+    defaultCategory: settings?.defaultCategory || 'Entertainment',
+    keywords: settings?.keywords || '',
+    blockedWords: settings?.blockedWords || ''
+  });
+
+  useEffect(() => {
+    if (channelInfo || settings) {
+      setSettingsDraft({
+        name: channelInfo?.name || 'Kids Toon',
+        handle: channelInfo?.handle || '@kidstoon',
+        avatar: channelInfo?.avatar || '/channel-avatar.png',
+        banner: channelInfo?.banner || '',
+        country: channelInfo?.country || 'United States',
+        currency: settings?.currency || 'INR - Indian Rupee',
+        theme: settings?.theme || 'Dark',
+        defaultVisibility: settings?.defaultVisibility || 'Public',
+        defaultCategory: settings?.defaultCategory || 'Entertainment',
+        keywords: settings?.keywords || '',
+        blockedWords: settings?.blockedWords || ''
+      });
+    }
+  }, [channelInfo, settings]);
+
+  useEffect(() => {
+    if (trafficSourcesCustom?.length) setTrafficDraft(trafficSourcesCustom);
+    if (searchTermsCustom?.length) setSearchTermsDraft(searchTermsCustom);
+    if (externalSourcesCustom?.length) setExternalSourcesDraft(externalSourcesCustom);
+  }, [trafficSourcesCustom, searchTermsCustom, externalSourcesCustom]);
 
   // Date Range Draft State
   const [dateDraft, setDateDraft] = useState({
@@ -421,13 +659,265 @@ export default function CRM() {
     reader.readAsDataURL(file);
   };
 
+  const handleCreateComment = () => {
+    if (!newCommentDraft.text.trim()) {
+      showToast('Please enter comment text', 'warning');
+      return;
+    }
+    crmAddComment({
+      ...newCommentDraft,
+      author: newCommentDraft.author.trim() || 'Viewer'
+    });
+    setNewCommentDraft({
+      author: '',
+      text: '',
+      videoId: videos[0]?.id || 'VID001',
+      likes: 0,
+      heart: false,
+      status: 'Published'
+    });
+    showToast('Comment published and synced to InsForge ✓', 'success');
+  };
+
+  const handleAddReply = (commentId) => {
+    const text = (replyDrafts[commentId] || '').trim();
+    if (!text) return;
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment) return;
+    const replies = [
+      ...(comment.replies || []),
+      {
+        id: `r_${Date.now()}`,
+        author: channelInfo?.name || 'Kids Toon',
+        authorAvatar: channelInfo?.avatar || '/channel-avatar.png',
+        time: 'Just now',
+        text
+      }
+    ];
+    crmUpdateComment(commentId, { replies });
+    setReplyDrafts(prev => ({ ...prev, [commentId]: '' }));
+    showToast('Reply saved to database ✓', 'success');
+  };
+
+  const handleCreatePlaylist = () => {
+    if (!newPlaylistDraft.title.trim()) {
+      showToast('Please enter playlist title', 'warning');
+      return;
+    }
+    crmAddPlaylist(newPlaylistDraft);
+    setNewPlaylistDraft({
+      title: '',
+      visibility: 'Public',
+      videoCount: 0
+    });
+    showToast('Playlist created and synced to InsForge ✓', 'success');
+  };
+
+  const handleSaveSettings = () => {
+    crmUpdateChannelMetrics({
+      name: settingsDraft.name,
+      handle: settingsDraft.handle,
+      avatar: settingsDraft.avatar,
+      banner: settingsDraft.banner,
+      country: settingsDraft.country
+    });
+    crmUpdateSettings({
+      currency: settingsDraft.currency,
+      theme: settingsDraft.theme,
+      country: settingsDraft.country,
+      keywords: settingsDraft.keywords,
+      defaultVisibility: settingsDraft.defaultVisibility,
+      defaultCategory: settingsDraft.defaultCategory,
+      blockedWords: settingsDraft.blockedWords
+    });
+    showToast('Settings & Branding saved to InsForge ✓', 'success');
+  };
+
+  const handleExportStateJSON = () => {
+    const fullSnapshot = {
+      channelInfo,
+      videos,
+      comments,
+      playlists,
+      settings,
+      subtitles,
+      audioTracks,
+      exportedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(fullSnapshot, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `yt_studio_crm_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Exported snapshot JSON ✓', 'success');
+  };
+
+  const handleImportStateJSON = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        crmImportState(parsed);
+        showToast('Imported and persisted state snapshot ✓', 'success');
+      } catch (err) {
+        showToast(`Failed to parse JSON: ${err.message}`, 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleCreateVideo = () => {
+    if (!newVideoDraft.title.trim()) {
+      showToast('Please enter video title', 'warning');
+      return;
+    }
+    crmAddVideo(newVideoDraft);
+    setNewVideoDraft({
+      title: '',
+      description: '',
+      thumbnail: '/thumbnails/1.webp',
+      duration: '10:15',
+      durationSecs: 615,
+      avgViewDuration: '3:45',
+      avgViewDurationSecs: 225,
+      views: 250000,
+      rpm: 33.64,
+      ctr: 8.5,
+      likes: 11500,
+      comments: 850,
+      category: 'Entertainment',
+      visibility: 'Public',
+      monetization: 'On'
+    });
+    showToast('Video created and added to YouTube Studio ✓', 'success');
+  };
+
+  const handleCreateShort = () => {
+    if (!newShortDraft.title.trim()) {
+      showToast('Please enter Short title', 'warning');
+      return;
+    }
+    crmAddShort(newShortDraft);
+    setNewShortDraft({
+      title: '',
+      views: 350000,
+      likes: 24000,
+      comments: 850,
+      remixes: 320,
+      viewedPct: 82.5,
+      swipedAwayPct: 17.5,
+      thumbnail: '/thumbnails/1.webp',
+      visibility: 'Public'
+    });
+    showToast('Short created and synced to Studio Content → Shorts ✓', 'success');
+  };
+
+  const handleCreateClaim = () => {
+    crmAddCopyrightClaim(newClaimDraft);
+    setNewClaimDraft({
+      videoTitle: videos[0]?.title || 'AI Course',
+      matchingVideoTitle: 'Royalty Ambient Sound',
+      matchingChannel: 'Global Sound Lab',
+      matchPercent: '15%',
+      segment: '02:10 - 03:45',
+      views: 250000,
+      status: 'Active (No penalty)'
+    });
+    showToast('Copyright claim added to Studio Copyright Match tool ✓', 'success');
+  };
+
+  const handleCreateAudioTrack = () => {
+    if (!newAudioDraft.title.trim()) {
+      showToast('Please enter audio track title', 'warning');
+      return;
+    }
+    crmAddAudioTrack(newAudioDraft);
+    setNewAudioDraft({
+      title: '',
+      artist: 'Axiom Audio',
+      duration: '3:20',
+      genre: 'Electronic',
+      mood: 'Bright',
+      starred: false
+    });
+    showToast('Track added to Studio Audio Library ✓', 'success');
+  };
+
+  const handleCreateSubtitleTrack = () => {
+    const langs = newSubDraft.languagesStr.split(',').map(s => s.trim()).filter(Boolean);
+    crmAddSubtitleTrack({
+      ...newSubDraft,
+      languages: langs.length > 0 ? langs : ['English']
+    });
+    showToast('Subtitles language track added to Studio Subtitles ✓', 'success');
+  };
+
+  const handleCreateNotification = () => {
+    if (!newNotifDraft.title.trim()) {
+      showToast('Please enter notification title', 'warning');
+      return;
+    }
+    crmAddNotification(newNotifDraft);
+    setNewNotifDraft({
+      title: '',
+      message: '',
+      time: 'Just now'
+    });
+    showToast('Notification broadcasted to Studio header menu ✓', 'success');
+  };
+
+  const handleSaveEarn = () => {
+    crmUpdateEarnConfig(earnDraft);
+    showToast('Earn & Partner Program settings saved ✓', 'success');
+  };
+
+  const handleSaveTraffic = () => {
+    crmUpdateTrafficSources(trafficDraft);
+    crmUpdateSearchTerms(searchTermsDraft);
+    crmUpdateExternalSources(externalSourcesDraft);
+    showToast('Traffic & Discovery data saved to Studio ✓', 'success');
+  };
+
+  const handleSaveAudience = () => {
+    crmUpdateAudience(audienceDraft);
+    showToast('Audience & Demographics saved to Studio ✓', 'success');
+  };
+
+  const handleSaveRevenue = () => {
+    crmUpdateRevenueCustom(revenueDraft);
+    showToast('Revenue & Ad Types saved to Studio ✓', 'success');
+  };
+
+  const handleSaveRealtime = () => {
+    crmUpdateRealtimeConfig(realtimeDraft);
+    showToast('Realtime & Live Ticker settings saved ✓', 'success');
+  };
+
   const navItems = [
-    { key: 'growth',   icon: '🖼️', label: 'Thumbnails & Subs' },
-    { key: 'videos',   icon: '🎬', label: 'Videos Manager' },
-    { key: 'channel',  icon: '📡', label: 'Channel Metrics' },
-    { key: 'dates',    icon: '📅', label: 'Dates & Range' },
-    { key: 'bulk',     icon: '⚡', label: 'Bulk Actions' },
-    { key: 'preview',  icon: '👁️', label: 'Live Preview' },
+    { key: 'growth',        icon: '🖼️', label: 'Thumbnails & Subs' },
+    { key: 'videos',        icon: '🎬', label: 'Videos & Content' },
+    { key: 'shorts',        icon: '⚡', label: 'Shorts & Reels' },
+    { key: 'channel',       icon: '📡', label: 'Channel Metrics' },
+    { key: 'traffic',       icon: '🚦', label: 'Traffic & Discovery' },
+    { key: 'audience',      icon: '👥', label: 'Audience & Geography' },
+    { key: 'revenue',       icon: '💰', label: 'Revenue & Ad Types' },
+    { key: 'earn',          icon: '💎', label: 'Earn & Monetization' },
+    { key: 'realtime',      icon: '🔴', label: 'Realtime & Live Ticker' },
+    { key: 'comments',      icon: '💬', label: 'Comments & Community' },
+    { key: 'playlists',     icon: '📑', label: 'Playlists Manager' },
+    { key: 'subtitles',     icon: '🌐', label: 'Subtitles & CC' },
+    { key: 'copyright',     icon: '🛡️', label: 'Copyright & Content ID' },
+    { key: 'audio',         icon: '🎵', label: 'Audio Library & SFX' },
+    { key: 'notifications', icon: '🔔', label: 'Studio Notifications' },
+    { key: 'settings',      icon: '⚙️', label: 'Settings & Branding' },
+    { key: 'dates',         icon: '📅', label: 'Dates & Range' },
+    { key: 'bulk',          icon: '⚡', label: 'Bulk Actions & Presets' },
+    { key: 'database',      icon: '🗄️', label: 'Database & Cloud' },
+    { key: 'preview',       icon: '👁️', label: 'Live Preview' },
   ];
 
   return (
@@ -469,16 +959,32 @@ export default function CRM() {
             <h1 className="crm-title">{navItems.find(n => n.key === activeSection)?.label}</h1>
             <p className="crm-subtitle">
               {activeSection === 'growth' && 'Edit per-video subscriber gain and replace thumbnails with live instant synchronization across Studio & Analytics'}
-              {activeSection === 'videos' && 'Edit per-video metrics — subscriber gains, thumbnails, views, likes & RPM'}
+              {activeSection === 'videos' && 'Manage all videos, create new uploads, duplicate, delete and edit metrics in real time'}
+              {activeSection === 'shorts' && 'Create and manage YouTube Shorts, view swipe-away rates, remix counts, and sync with Content Shorts'}
               {activeSection === 'channel' && 'Edit channel-level stats — changes reflect instantly in YouTube Studio'}
+              {activeSection === 'traffic' && 'Modulate traffic sources (Browse, Suggested, Search %, External apps, and Top search keywords)'}
+              {activeSection === 'audience' && 'Modulate Returning vs New Viewers, Subscribed Watch Time, Top Geographies, and Age/Gender breakdown'}
+              {activeSection === 'revenue' && 'Modulate Monthly Estimated Revenue, Revenue Streams, and Ad Type distributions'}
+              {activeSection === 'earn' && 'Configure YouTube Partner Program (YPP) status, milestone requirements, and active monetization streams'}
+              {activeSection === 'realtime' && 'Modulate 48-Hour & 60-Minute Realtime graphs, Live Subscriber counter, and ticker speeds'}
+              {activeSection === 'comments' && 'Moderate community comments, create new comments, pin/heart, reply, and sync with Studio Community page'}
+              {activeSection === 'playlists' && 'Manage channel playlists, visibility, and video counts synced with Studio Content'}
+              {activeSection === 'subtitles' && 'Manage multi-language translation tracks, subtitle publication states per video'}
+              {activeSection === 'copyright' && 'Simulate and manage Content ID copyright matches and takedown statuses'}
+              {activeSection === 'audio' && 'Add royalty-free music and sound effects to the Creator Studio Audio Library'}
+              {activeSection === 'notifications' && 'Broadcast custom notifications and milestones to the Studio top navigation'}
+              {activeSection === 'settings' && 'Configure channel identity, keywords, upload defaults, and moderation filters'}
               {activeSection === 'dates' && 'Control simulation anchor dates, 28-day window (e.g. Jul 16 – Aug 12, 2026), and synchronize date axes across all graphs'}
               {activeSection === 'bulk' && 'Apply batch changes across all videos at once'}
+              {activeSection === 'database' && 'InsForge PostgreSQL backend overview, synchronization control, JSON export and import'}
               {activeSection === 'preview' && 'Read-only live snapshot of current store values'}
             </p>
           </div>
           <div className="crm-header-badges">
-            <span className="crm-badge crm-badge-green">● Live Sync</span>
+            <span className="crm-badge crm-badge-green">● Live InsForge BaaS</span>
             <span className="crm-badge">{videos.length} videos</span>
+            <span className="crm-badge">{shorts.length} shorts</span>
+            <span className="crm-badge">{comments.length} comments</span>
           </div>
         </div>
 
@@ -822,6 +1328,95 @@ export default function CRM() {
         {/* ── VIDEOS MANAGER ── */}
         {activeSection === 'videos' && (
           <div className="crm-section">
+            {/* Create New Video Upload Form */}
+            <div className="crm-card">
+              <div className="crm-card-title">➕ 1. Add New Video Upload to Studio</div>
+              <p className="crm-card-desc">Create a new video with custom metrics. Instantly appears in Content, Dashboard, and Analytics.</p>
+              <div className="crm-grid-2">
+                <div className="crm-field">
+                  <label className="crm-field-label">Video Title</label>
+                  <input
+                    className="crm-input"
+                    placeholder="e.g. Master AI Video Creation in 2026"
+                    value={newVideoDraft.title}
+                    onChange={e => setNewVideoDraft(d => ({ ...d, title: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Thumbnail URL</label>
+                  <input
+                    className="crm-input"
+                    placeholder="/thumbnails/1.webp or image URL"
+                    value={newVideoDraft.thumbnail}
+                    onChange={e => setNewVideoDraft(d => ({ ...d, thumbnail: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="crm-grid-3">
+                <CRMInput
+                  label="Views"
+                  value={newVideoDraft.views}
+                  onChange={v => setNewVideoDraft(d => ({ ...d, views: v }))}
+                  min={0}
+                  step={10000}
+                />
+                <CRMInput
+                  label="RPM (₹)"
+                  value={newVideoDraft.rpm}
+                  onChange={v => setNewVideoDraft(d => ({ ...d, rpm: v }))}
+                  min={0}
+                  step={0.5}
+                  unit="₹"
+                />
+                <CRMInput
+                  label="Likes"
+                  value={newVideoDraft.likes}
+                  onChange={v => setNewVideoDraft(d => ({ ...d, likes: v }))}
+                  min={0}
+                  step={100}
+                />
+              </div>
+
+              <div className="crm-grid-3">
+                <div className="crm-field">
+                  <label className="crm-field-label">Duration (MM:SS)</label>
+                  <input
+                    className="crm-input"
+                    value={newVideoDraft.duration}
+                    onChange={e => setNewVideoDraft(d => ({ ...d, duration: e.target.value, durationSecs: parseAvdToSeconds(e.target.value, 600) }))}
+                  />
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Avg Duration AVD (MM:SS)</label>
+                  <input
+                    className="crm-input"
+                    value={newVideoDraft.avgViewDuration}
+                    onChange={e => setNewVideoDraft(d => ({ ...d, avgViewDuration: e.target.value, avgViewDurationSecs: parseAvdToSeconds(e.target.value, 180) }))}
+                  />
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Category</label>
+                  <select
+                    className="crm-input"
+                    value={newVideoDraft.category}
+                    onChange={e => setNewVideoDraft(d => ({ ...d, category: e.target.value }))}
+                  >
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Science & Technology">Science & Technology</option>
+                    <option value="Education">Education</option>
+                    <option value="Howto & Style">Howto & Style</option>
+                    <option value="Gaming">Gaming</option>
+                  </select>
+                </div>
+              </div>
+
+              <button className="crm-apply-btn" onClick={handleCreateVideo} style={{ marginTop: 8 }}>
+                ➕ Create & Add Video to Studio
+              </button>
+            </div>
+
+            {/* Video List & Inline Editor */}
             <div className="crm-videos-toolbar">
               <input
                 className="crm-search"
@@ -934,13 +1529,33 @@ export default function CRM() {
                               <button className="crm-btn crm-btn-edit" onClick={() => startEdit(v)}>Edit</button>
                               <button
                                 className="crm-btn crm-btn-cancel"
+                                title="Duplicate video"
+                                onClick={() => {
+                                  crmDuplicateVideo(v.id);
+                                  showToast('Video duplicated ✓', 'info');
+                                }}
+                              >
+                                📋 Copy
+                              </button>
+                              <button
+                                className="crm-btn crm-btn-cancel"
                                 title="Open in dedicated Thumbnail & Subs editor"
                                 onClick={() => {
                                   setSelectedVideoId(v.id);
                                   setActiveSection('growth');
                                 }}
                               >
-                                🖼️ Studio
+                                🖼️
+                              </button>
+                              <button
+                                className="crm-action-btn danger"
+                                title="Delete video"
+                                onClick={() => {
+                                  crmDeleteVideo(v.id);
+                                  showToast('Video deleted from Studio ✓', 'info');
+                                }}
+                              >
+                                🗑️
                               </button>
                             </td>
                           </>
@@ -950,6 +1565,148 @@ export default function CRM() {
                   })}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* ── SHORTS & REELS CRM ── */}
+        {activeSection === 'shorts' && (
+          <div className="crm-section">
+            <div className="crm-card">
+              <div className="crm-card-title">➕ 1. Create New Short</div>
+              <p className="crm-card-desc">Publish a new vertical video directly to the Studio Content Shorts tab and Analytics.</p>
+              <div className="crm-grid-2">
+                <div className="crm-field">
+                  <label className="crm-field-label">Short Title</label>
+                  <input
+                    className="crm-input"
+                    placeholder="e.g. 3 AI tools you never knew #shorts"
+                    value={newShortDraft.title}
+                    onChange={e => setNewShortDraft(d => ({ ...d, title: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Thumbnail URL</label>
+                  <input
+                    className="crm-input"
+                    value={newShortDraft.thumbnail}
+                    onChange={e => setNewShortDraft(d => ({ ...d, thumbnail: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="crm-grid-3">
+                <CRMInput
+                  label="Views"
+                  value={newShortDraft.views}
+                  onChange={v => setNewShortDraft(d => ({ ...d, views: v }))}
+                  min={0}
+                  step={10000}
+                />
+                <CRMInput
+                  label="Likes"
+                  value={newShortDraft.likes}
+                  onChange={v => setNewShortDraft(d => ({ ...d, likes: v }))}
+                  min={0}
+                  step={500}
+                />
+                <CRMInput
+                  label="Remixes Count"
+                  value={newShortDraft.remixes}
+                  onChange={v => setNewShortDraft(d => ({ ...d, remixes: v }))}
+                  min={0}
+                  step={50}
+                />
+              </div>
+
+              <div className="crm-grid-2">
+                <div className="crm-slider-row">
+                  <span className="crm-slider-label">Viewed Rate</span>
+                  <input
+                    type="range"
+                    className="crm-range-input"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={newShortDraft.viewedPct}
+                    onChange={e => {
+                      const val = parseFloat(e.target.value) || 0;
+                      setNewShortDraft(d => ({ ...d, viewedPct: val, swipedAwayPct: parseFloat((100 - val).toFixed(1)) }));
+                    }}
+                  />
+                  <span className="crm-slider-val">{newShortDraft.viewedPct}%</span>
+                </div>
+                <div className="crm-slider-row">
+                  <span className="crm-slider-label">Swiped Away</span>
+                  <input
+                    type="range"
+                    className="crm-range-input"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={newShortDraft.swipedAwayPct}
+                    onChange={e => {
+                      const val = parseFloat(e.target.value) || 0;
+                      setNewShortDraft(d => ({ ...d, swipedAwayPct: val, viewedPct: parseFloat((100 - val).toFixed(1)) }));
+                    }}
+                  />
+                  <span className="crm-slider-val">{newShortDraft.swipedAwayPct}%</span>
+                </div>
+              </div>
+
+              <button className="crm-apply-btn" onClick={handleCreateShort} style={{ marginTop: 8 }}>
+                ➕ Publish Short to Studio
+              </button>
+            </div>
+
+            {/* Shorts List Table */}
+            <div className="crm-card">
+              <div className="crm-card-title">📱 Shorts Catalog ({shorts.length})</div>
+              <div className="crm-table-wrap">
+                <table className="crm-table crm-table-compact">
+                  <thead>
+                    <tr>
+                      <th>Short</th>
+                      <th>Views</th>
+                      <th>Likes</th>
+                      <th>Remixes</th>
+                      <th>Viewed vs Swiped</th>
+                      <th>Visibility</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {shorts.map(s => (
+                      <tr key={s.id}>
+                        <td className="crm-vid-title-cell">
+                          <img src={s.thumbnail || '/thumbnails/1.webp'} alt="" className="crm-vid-thumb" style={{ width: '40px', height: '60px', borderRadius: '4px' }} />
+                          <span className="crm-vid-name">{s.title}</span>
+                        </td>
+                        <td>{fmt(s.views)}</td>
+                        <td>{(s.likes || 0).toLocaleString()}</td>
+                        <td>{(s.remixes || 0).toLocaleString()}</td>
+                        <td>
+                          <span style={{ color: '#4ade80' }}>{s.viewedPct || 78}%</span> / <span style={{ color: '#f87171' }}>{s.swipedAwayPct || 22}%</span>
+                        </td>
+                        <td>
+                          <span className="crm-badge crm-badge-green">{s.visibility || 'Public'}</span>
+                        </td>
+                        <td>
+                          <button
+                            className="crm-action-btn danger"
+                            onClick={() => {
+                              crmDeleteShort(s.id);
+                              showToast('Short deleted ✓', 'info');
+                            }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -1019,6 +1776,1199 @@ export default function CRM() {
                 }}
               >
                 📊 Auto-align with sum of all videos
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── TRAFFIC & DISCOVERY CRM ── */}
+        {activeSection === 'traffic' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">🚦 1. How Viewers Find Your Content</div>
+                <p className="crm-card-desc">Adjust the percentage distribution of traffic sources shown on the Analytics Content/Reach tab.</p>
+                <div className="crm-demographic-grid">
+                  {trafficDraft.map((item, index) => (
+                    <div key={item.source} className="crm-slider-row">
+                      <span className="crm-slider-label">{item.source}</span>
+                      <input
+                        type="range"
+                        className="crm-range-input"
+                        min="0"
+                        max="80"
+                        step="0.1"
+                        value={item.percentage}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setTrafficDraft(prev => prev.map((t, i) => i === index ? { ...t, percentage: val } : t));
+                        }}
+                      />
+                      <span className="crm-slider-val">{item.percentage.toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: 6 }}>
+                  Total: <strong>{trafficDraft.reduce((s, t) => s + t.percentage, 0).toFixed(1)}%</strong>
+                </div>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">🔍 2. Top YouTube Search Terms</div>
+                <p className="crm-card-desc">Control what search queries appear under "YouTube search terms" in Reach analytics.</p>
+                <div className="crm-demographic-grid">
+                  {searchTermsDraft.map((term, index) => (
+                    <div key={index} className="crm-geo-row">
+                      <input
+                        className="crm-input"
+                        style={{ padding: '6px 10px', fontSize: '12px' }}
+                        value={term.term}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setSearchTermsDraft(prev => prev.map((t, i) => i === index ? { ...t, term: val } : t));
+                        }}
+                      />
+                      <input
+                        className="crm-input"
+                        type="number"
+                        style={{ padding: '6px 10px', fontSize: '12px' }}
+                        value={term.percentage}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setSearchTermsDraft(prev => prev.map((t, i) => i === index ? { ...t, percentage: val } : t));
+                        }}
+                      />
+                      <span style={{ fontSize: '12px', color: '#38bdf8' }}>% of views</span>
+                      <button
+                        className="crm-action-btn danger"
+                        onClick={() => setSearchTermsDraft(prev => prev.filter((_, i) => i !== index))}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                  <input
+                    className="crm-input"
+                    placeholder="New keyword..."
+                    value={newSearchTerm.term}
+                    onChange={e => setNewSearchTerm(t => ({ ...t, term: e.target.value }))}
+                  />
+                  <input
+                    className="crm-input"
+                    type="number"
+                    style={{ width: '80px' }}
+                    placeholder="%"
+                    value={newSearchTerm.percentage}
+                    onChange={e => setNewSearchTerm(t => ({ ...t, percentage: parseFloat(e.target.value) || 0 }))}
+                  />
+                  <button
+                    className="crm-btn crm-btn-save"
+                    onClick={() => {
+                      if (!newSearchTerm.term.trim()) return;
+                      setSearchTermsDraft(prev => [...prev, { ...newSearchTerm }]);
+                      setNewSearchTerm({ term: '', percentage: 10 });
+                    }}
+                  >
+                    ➕ Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="crm-card">
+              <div className="crm-card-title">🌐 3. External Sites & Apps</div>
+              <p className="crm-card-desc">Modulate the external traffic referrers breakdown (Google Search, WhatsApp, Reddit, Instagram, etc.).</p>
+              <div className="crm-grid-2">
+                {externalSourcesDraft.map((item, index) => (
+                  <div key={index} className="crm-slider-row">
+                    <span className="crm-slider-label">{item.source}</span>
+                    <input
+                      type="range"
+                      className="crm-range-input"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={item.percentage}
+                      onChange={e => {
+                        const val = parseFloat(e.target.value) || 0;
+                        setExternalSourcesDraft(prev => prev.map((s, i) => i === index ? { ...s, percentage: val } : s));
+                      }}
+                    />
+                    <span className="crm-slider-val">{item.percentage.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+              <button className="crm-apply-btn" onClick={handleSaveTraffic}>
+                💾 Save Traffic Overrides to Studio
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── AUDIENCE & GEOGRAPHY CRM ── */}
+        {activeSection === 'audience' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">👥 1. Viewer Loyalty & Watch Time</div>
+                <div className="crm-slider-row">
+                  <span className="crm-slider-label">Returning Viewers</span>
+                  <input
+                    type="range"
+                    className="crm-range-input"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={audienceDraft.returningViewers}
+                    onChange={e => {
+                      const ret = parseFloat(e.target.value) || 0;
+                      setAudienceDraft(d => ({ ...d, returningViewers: ret, newViewers: parseFloat((100 - ret).toFixed(1)) }));
+                    }}
+                  />
+                  <span className="crm-slider-val">{audienceDraft.returningViewers}%</span>
+                </div>
+                <div className="crm-slider-row">
+                  <span className="crm-slider-label">New Viewers</span>
+                  <input
+                    type="range"
+                    className="crm-range-input"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={audienceDraft.newViewers}
+                    onChange={e => {
+                      const nw = parseFloat(e.target.value) || 0;
+                      setAudienceDraft(d => ({ ...d, newViewers: nw, returningViewers: parseFloat((100 - nw).toFixed(1)) }));
+                    }}
+                  />
+                  <span className="crm-slider-val">{audienceDraft.newViewers}%</span>
+                </div>
+                <div className="crm-slider-row">
+                  <span className="crm-slider-label">Subscribed Watch Time</span>
+                  <input
+                    type="range"
+                    className="crm-range-input"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={audienceDraft.subscribedWatchTimePct}
+                    onChange={e => {
+                      const sub = parseFloat(e.target.value) || 0;
+                      setAudienceDraft(d => ({ ...d, subscribedWatchTimePct: sub, nonSubscribedWatchTimePct: parseFloat((100 - sub).toFixed(1)) }));
+                    }}
+                  />
+                  <span className="crm-slider-val">{audienceDraft.subscribedWatchTimePct}%</span>
+                </div>
+                <CRMInput
+                  label="Unique Viewers Count"
+                  value={audienceDraft.uniqueViewersCount}
+                  onChange={v => setAudienceDraft(d => ({ ...d, uniqueViewersCount: v }))}
+                  min={0}
+                  step={10000}
+                />
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">🌍 2. Top Geographies & Country RPM</div>
+                <div className="crm-demographic-grid" style={{ maxHeight: '280px', overflowY: 'auto' }}>
+                  {audienceDraft.geographies.map((geo, index) => (
+                    <div key={geo.country} className="crm-geo-row">
+                      <span style={{ fontSize: '13px', fontWeight: 500 }}>{geo.country}</span>
+                      <input
+                        className="crm-input"
+                        type="number"
+                        style={{ padding: '4px 8px', fontSize: '12px' }}
+                        value={geo.percentage}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setAudienceDraft(d => ({
+                            ...d,
+                            geographies: d.geographies.map((g, i) => i === index ? { ...g, percentage: val } : g)
+                          }));
+                        }}
+                      />
+                      <input
+                        className="crm-input"
+                        type="number"
+                        style={{ padding: '4px 8px', fontSize: '12px' }}
+                        value={geo.rpm}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setAudienceDraft(d => ({
+                            ...d,
+                            geographies: d.geographies.map((g, i) => i === index ? { ...g, rpm: val } : g)
+                          }));
+                        }}
+                      />
+                      <button
+                        className="crm-action-btn danger"
+                        onClick={() => setAudienceDraft(d => ({ ...d, geographies: d.geographies.filter((_, i) => i !== index) }))}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                  <input
+                    className="crm-input"
+                    placeholder="New Country..."
+                    value={newCountry.country}
+                    onChange={e => setNewCountry(c => ({ ...c, country: e.target.value }))}
+                  />
+                  <input
+                    className="crm-input"
+                    type="number"
+                    style={{ width: '70px' }}
+                    placeholder="%"
+                    value={newCountry.percentage}
+                    onChange={e => setNewCountry(c => ({ ...c, percentage: parseFloat(e.target.value) || 0 }))}
+                  />
+                  <input
+                    className="crm-input"
+                    type="number"
+                    style={{ width: '80px' }}
+                    placeholder="RPM ₹"
+                    value={newCountry.rpm}
+                    onChange={e => setNewCountry(c => ({ ...c, rpm: parseFloat(e.target.value) || 0 }))}
+                  />
+                  <button
+                    className="crm-btn crm-btn-save"
+                    onClick={() => {
+                      if (!newCountry.country.trim()) return;
+                      setAudienceDraft(d => ({ ...d, geographies: [...d.geographies, { ...newCountry }] }));
+                      setNewCountry({ country: '', percentage: 5.0, rpm: 35.00 });
+                    }}
+                  >
+                    ➕ Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Age & Gender Distribution */}
+            <div className="crm-card">
+              <div className="crm-card-title">🎂 3. Age & Gender Distribution</div>
+              <div className="crm-grid-2">
+                {audienceDraft.ageGender.map((ag, index) => (
+                  <div key={ag.group} className="crm-slider-row">
+                    <span className="crm-slider-label">{ag.group}</span>
+                    <input
+                      type="range"
+                      className="crm-range-input"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={ag.percentage}
+                      onChange={e => {
+                        const val = parseFloat(e.target.value) || 0;
+                        setAudienceDraft(d => ({
+                          ...d,
+                          ageGender: d.ageGender.map((a, i) => i === index ? { ...a, percentage: val } : a)
+                        }));
+                      }}
+                    />
+                    <span className="crm-slider-val">{ag.percentage}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+              <button className="crm-apply-btn" onClick={handleSaveAudience}>
+                💾 Save Audience Overrides to Studio
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── REVENUE & AD TYPES CRM ── */}
+        {activeSection === 'revenue' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">📅 1. Monthly Estimated Revenue History</div>
+                <p className="crm-card-desc">Override the last 6 months' historical revenue shown on the Revenue tab cards.</p>
+                <div className="crm-demographic-grid">
+                  {revenueDraft.monthlyRevenue.map((m, index) => (
+                    <div key={m.month} className="crm-slider-row">
+                      <span className="crm-slider-label">{m.month}</span>
+                      <input
+                        className="crm-input"
+                        type="number"
+                        style={{ padding: '4px 8px', fontSize: '13px' }}
+                        value={m.revenue}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setRevenueDraft(d => ({
+                            ...d,
+                            monthlyRevenue: d.monthlyRevenue.map((item, i) => i === index ? { ...item, revenue: val, formatted: `₹${val.toLocaleString('en-IN')}` } : item)
+                          }));
+                        }}
+                      />
+                      <span className="crm-slider-val">₹{m.revenue.toLocaleString('en-IN')}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">💼 2. Revenue Streams Breakdown</div>
+                <div className="crm-demographic-grid">
+                  {revenueDraft.revenueStreams.map((rs, index) => (
+                    <div key={rs.stream} className="crm-slider-row">
+                      <span className="crm-slider-label">{rs.stream}</span>
+                      <input
+                        type="range"
+                        className="crm-range-input"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value={rs.percentage}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setRevenueDraft(d => ({
+                            ...d,
+                            revenueStreams: d.revenueStreams.map((item, i) => i === index ? { ...item, percentage: val } : item)
+                          }));
+                        }}
+                      />
+                      <span className="crm-slider-val">{rs.percentage}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="crm-card">
+              <div className="crm-card-title">📺 3. Ad Types Breakdown</div>
+              <div className="crm-grid-2">
+                {revenueDraft.adTypes.map((ad, index) => (
+                  <div key={ad.type} className="crm-slider-row">
+                    <span className="crm-slider-label">{ad.type}</span>
+                    <input
+                      type="range"
+                      className="crm-range-input"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={ad.percentage}
+                      onChange={e => {
+                        const val = parseFloat(e.target.value) || 0;
+                        setRevenueDraft(d => ({
+                          ...d,
+                          adTypes: d.adTypes.map((item, i) => i === index ? { ...item, percentage: val } : item)
+                        }));
+                      }}
+                    />
+                    <span className="crm-slider-val">{ad.percentage}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+              <button className="crm-apply-btn" onClick={handleSaveRevenue}>
+                💾 Save Revenue Overrides to Studio
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── EARN & MONETIZATION CRM ── */}
+        {activeSection === 'earn' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">💎 1. YouTube Partner Program (YPP) Status</div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Channel Monetization Status</label>
+                  <select
+                    className="crm-input"
+                    value={earnDraft.yppStatus}
+                    onChange={e => setEarnDraft(d => ({ ...d, yppStatus: e.target.value }))}
+                  >
+                    <option value="Active Partner">Active Partner (Fully Monetized)</option>
+                    <option value="Eligible">Eligible to Apply</option>
+                    <option value="Under Review">Under Review</option>
+                    <option value="Not Eligible">Not Eligible</option>
+                  </select>
+                </div>
+                <div className="crm-demographic-grid" style={{ marginTop: 12 }}>
+                  <div className="crm-slider-row">
+                    <span className="crm-slider-label">Watch Page Ads</span>
+                    <input
+                      type="checkbox"
+                      checked={earnDraft.watchPageAds}
+                      onChange={e => setEarnDraft(d => ({ ...d, watchPageAds: e.target.checked }))}
+                    />
+                    <span className="crm-slider-val">{earnDraft.watchPageAds ? 'ACTIVE' : 'OFF'}</span>
+                  </div>
+                  <div className="crm-slider-row">
+                    <span className="crm-slider-label">Shorts Feed Ads</span>
+                    <input
+                      type="checkbox"
+                      checked={earnDraft.shortsAds}
+                      onChange={e => setEarnDraft(d => ({ ...d, shortsAds: e.target.checked }))}
+                    />
+                    <span className="crm-slider-val">{earnDraft.shortsAds ? 'ACTIVE' : 'OFF'}</span>
+                  </div>
+                  <div className="crm-slider-row">
+                    <span className="crm-slider-label">Memberships</span>
+                    <input
+                      type="checkbox"
+                      checked={earnDraft.memberships}
+                      onChange={e => setEarnDraft(d => ({ ...d, memberships: e.target.checked }))}
+                    />
+                    <span className="crm-slider-val">{earnDraft.memberships ? 'ACTIVE' : 'OFF'}</span>
+                  </div>
+                  <div className="crm-slider-row">
+                    <span className="crm-slider-label">Super Chat & Stickers</span>
+                    <input
+                      type="checkbox"
+                      checked={earnDraft.supers}
+                      onChange={e => setEarnDraft(d => ({ ...d, supers: e.target.checked }))}
+                    />
+                    <span className="crm-slider-val">{earnDraft.supers ? 'ACTIVE' : 'OFF'}</span>
+                  </div>
+                  <div className="crm-slider-row">
+                    <span className="crm-slider-label">Shopping</span>
+                    <input
+                      type="checkbox"
+                      checked={earnDraft.shopping}
+                      onChange={e => setEarnDraft(d => ({ ...d, shopping: e.target.checked }))}
+                    />
+                    <span className="crm-slider-val">{earnDraft.shopping ? 'ACTIVE' : 'OFF'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">🎯 2. Milestone Requirements Progress</div>
+                <p className="crm-card-desc">Tune the progress counters shown on the Earn page.</p>
+                <CRMInput
+                  label="Subscribers Target"
+                  value={earnDraft.subscribersTarget}
+                  onChange={v => setEarnDraft(d => ({ ...d, subscribersTarget: v }))}
+                  min={100}
+                  step={100}
+                />
+                <CRMInput
+                  label="Public Watch Hours Target"
+                  value={earnDraft.watchHoursTarget}
+                  onChange={v => setEarnDraft(d => ({ ...d, watchHoursTarget: v }))}
+                  min={100}
+                  step={500}
+                />
+                <CRMInput
+                  label="Shorts Views Target"
+                  value={earnDraft.shortsViewsTarget}
+                  onChange={v => setEarnDraft(d => ({ ...d, shortsViewsTarget: v }))}
+                  min={100000}
+                  step={1000000}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+              <button className="crm-apply-btn" onClick={handleSaveEarn}>
+                💾 Save Earn Settings to Studio
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── REALTIME & LIVE TICKER CRM ── */}
+        {activeSection === 'realtime' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">🔴 1. Live Subscribers & Ticker Tuning</div>
+                <p className="crm-card-desc">Control live sub counter increments and ticking speed across all Analytics realtime widgets.</p>
+                <div className="crm-field">
+                  <label className="crm-field-label">Simulation Ticker Speed</label>
+                  <select
+                    className="crm-input"
+                    value={realtimeDraft.speedMultiplier}
+                    onChange={e => setRealtimeDraft(d => ({ ...d, speedMultiplier: parseFloat(e.target.value) }))}
+                  >
+                    <option value="0.5">0.5x (Slow natural updates)</option>
+                    <option value="1.0">1.0x (Normal speed - 5s ticker)</option>
+                    <option value="2.0">2.0x (Fast spikes)</option>
+                    <option value="5.0">5.0x (Hyper growth test)</option>
+                  </select>
+                </div>
+                <div className="crm-quick-pill-row" style={{ marginTop: 8 }}>
+                  <span className="crm-field-label" style={{ marginBottom: 0 }}>Boost Subscribers:</span>
+                  {[10, 50, 100, 500, 1000].map(cnt => (
+                    <button
+                      key={cnt}
+                      type="button"
+                      className="crm-mini-pill"
+                      onClick={() => {
+                        crmUpdateChannelMetrics({ subscribers: (channelInfo?.subscribers || 412850) + cnt });
+                        showToast(`Added +${cnt} live subscribers!`, 'success');
+                      }}
+                    >
+                      +{cnt} Subs
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">📊 2. Realtime Bar Totals</div>
+                <p className="crm-card-desc">Directly scale the 48-hour or 60-minute realtime views count.</p>
+                <CRMInput
+                  label="Override 48-Hour Views"
+                  value={realtimeDraft.override48h || ''}
+                  placeholder="e.g. 78500"
+                  onChange={v => setRealtimeDraft(d => ({ ...d, override48h: v }))}
+                />
+                <CRMInput
+                  label="Override 60-Minute Views"
+                  value={realtimeDraft.override60m || ''}
+                  placeholder="e.g. 1850"
+                  onChange={v => setRealtimeDraft(d => ({ ...d, override60m: v }))}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+              <button className="crm-apply-btn" onClick={handleSaveRealtime}>
+                💾 Apply Realtime Settings
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── COMMENTS & COMMUNITY CRM ── */}
+        {activeSection === 'comments' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">💬 1. Add New Comment</div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Author Name</label>
+                  <input
+                    className="crm-input"
+                    placeholder="e.g. Sarah Connor"
+                    value={newCommentDraft.author}
+                    onChange={e => setNewCommentDraft(d => ({ ...d, author: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Target Video</label>
+                  <select
+                    className="crm-input"
+                    value={newCommentDraft.videoId}
+                    onChange={e => setNewCommentDraft(d => ({ ...d, videoId: e.target.value }))}
+                  >
+                    {videos.map(v => (
+                      <option key={v.id} value={v.id}>{v.title}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Comment Text</label>
+                  <textarea
+                    className="crm-input"
+                    rows={3}
+                    placeholder="Write comment content..."
+                    value={newCommentDraft.text}
+                    onChange={e => setNewCommentDraft(d => ({ ...d, text: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-grid-2" style={{ gap: 8 }}>
+                  <CRMInput
+                    label="Likes"
+                    value={newCommentDraft.likes}
+                    onChange={v => setNewCommentDraft(d => ({ ...d, likes: v }))}
+                  />
+                  <div className="crm-field">
+                    <label className="crm-field-label">Status</label>
+                    <select
+                      className="crm-input"
+                      value={newCommentDraft.status}
+                      onChange={e => setNewCommentDraft(d => ({ ...d, status: e.target.value }))}
+                    >
+                      <option value="Published">Published</option>
+                      <option value="Held for review">Held for review</option>
+                    </select>
+                  </div>
+                </div>
+                <button className="crm-apply-btn" onClick={handleCreateComment} style={{ marginTop: 12 }}>
+                  ➕ Publish Comment to InsForge & Studio
+                </button>
+              </div>
+
+              {/* Moderation Controls & Filter */}
+              <div className="crm-card">
+                <div className="crm-card-title">🔍 2. Filter & Moderation</div>
+                <input
+                  className="crm-search"
+                  placeholder="Search comments by author or text..."
+                  value={commentSearch}
+                  onChange={e => setCommentSearch(e.target.value)}
+                />
+                <div className="crm-quick-pill-row" style={{ marginTop: 12 }}>
+                  {['All', 'Published', 'Held for review'].map(f => (
+                    <button
+                      key={f}
+                      className={`crm-mini-pill ${commentFilter === f ? 'active-pill' : ''}`}
+                      onClick={() => setCommentFilter(f)}
+                    >
+                      {f} ({f === 'All' ? comments.length : comments.filter(c => c.status === f).length})
+                    </button>
+                  ))}
+                </div>
+                <div className="crm-db-stat-tile" style={{ marginTop: 16 }}>
+                  <div className="crm-db-stat-tile-title">Total Active Comments</div>
+                  <div className="crm-db-stat-tile-val">{comments.length}</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: 4 }}>
+                    Changes sync in real time across the Studio Community page.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Comments List */}
+            <div className="crm-card">
+              <div className="crm-card-title">📋 Comment Stream ({comments.length})</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {comments
+                  .filter(c => (commentFilter === 'All' || c.status === commentFilter) &&
+                               (c.author?.toLowerCase().includes(commentSearch.toLowerCase()) || c.text?.toLowerCase().includes(commentSearch.toLowerCase())))
+                  .map(c => {
+                    const vid = videos.find(v => v.id === c.videoId);
+                    return (
+                      <div key={c.id} className="crm-comment-card">
+                        <div className="crm-comment-header">
+                          <div className="crm-comment-author-box">
+                            <img src={c.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'} alt="" className="crm-comment-avatar" />
+                            <div>
+                              <span className="crm-comment-author">{c.author}</span>
+                              <span className="crm-comment-time">{c.time}</span>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <span className="crm-comment-video-tag">{vid?.title || c.videoId}</span>
+                            <button
+                              className={`crm-status-pill ${c.status === 'Published' ? 'crm-status-published' : 'crm-status-held'}`}
+                              onClick={() => crmUpdateComment(c.id, { status: c.status === 'Published' ? 'Held for review' : 'Published' })}
+                            >
+                              {c.status}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="crm-comment-body">{c.text}</div>
+
+                        {/* Replies display */}
+                        {c.replies && c.replies.length > 0 && (
+                          <div style={{ background: '#0a0a14', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
+                            {c.replies.map(r => (
+                              <div key={r.id} style={{ display: 'flex', gap: 6, margin: '4px 0' }}>
+                                <strong style={{ color: '#a78bfa' }}>{r.author}:</strong>
+                                <span style={{ color: '#cbd5e1' }}>{r.text}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Footer actions */}
+                        <div className="crm-comment-footer">
+                          <div className="crm-comment-actions">
+                            <button
+                              className={`crm-action-btn ${c.heart ? 'active' : ''}`}
+                              onClick={() => crmUpdateComment(c.id, { heart: !c.heart })}
+                            >
+                              {c.heart ? '❤️ Hearted' : '🤍 Heart'}
+                            </button>
+                            <button
+                              className="crm-action-btn"
+                              onClick={() => crmUpdateComment(c.id, { likes: (c.likes || 0) + 1 })}
+                            >
+                              👍 {c.likes || 0}
+                            </button>
+                            <button
+                              className="crm-action-btn danger"
+                              onClick={() => crmDeleteComment(c.id)}
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, flex: 1, maxWidth: '360px' }}>
+                            <input
+                              className="crm-input"
+                              style={{ padding: '4px 8px', fontSize: '12px' }}
+                              placeholder="Reply as channel..."
+                              value={replyDrafts[c.id] || ''}
+                              onChange={e => setReplyDrafts({ ...replyDrafts, [c.id]: e.target.value })}
+                              onKeyDown={e => { if (e.key === 'Enter') handleAddReply(c.id); }}
+                            />
+                            <button className="crm-btn crm-btn-save" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => handleAddReply(c.id)}>
+                              Reply
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── PLAYLISTS MANAGER CRM ── */}
+        {activeSection === 'playlists' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">➕ 1. Create New Playlist</div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Playlist Title</label>
+                  <input
+                    className="crm-input"
+                    placeholder="e.g. Masterclass Series"
+                    value={newPlaylistDraft.title}
+                    onChange={e => setNewPlaylistDraft(d => ({ ...d, title: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Visibility</label>
+                  <select
+                    className="crm-input"
+                    value={newPlaylistDraft.visibility}
+                    onChange={e => setNewPlaylistDraft(d => ({ ...d, visibility: e.target.value }))}
+                  >
+                    <option value="Public">Public</option>
+                    <option value="Unlisted">Unlisted</option>
+                    <option value="Private">Private</option>
+                  </select>
+                </div>
+                <CRMInput
+                  label="Initial Video Count"
+                  value={newPlaylistDraft.videoCount}
+                  onChange={v => setNewPlaylistDraft(d => ({ ...d, videoCount: v }))}
+                />
+                <button className="crm-apply-btn" onClick={handleCreatePlaylist} style={{ marginTop: 12 }}>
+                  ➕ Create & Sync Playlist
+                </button>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">📊 Playlists Overview</div>
+                <div className="crm-db-stat-tile">
+                  <div className="crm-db-stat-tile-title">Total Playlists</div>
+                  <div className="crm-db-stat-tile-val">{playlists.length}</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: 6 }}>
+                    Directly linked with YouTube Studio <strong>Content → Playlists</strong>.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Playlists Grid */}
+            <div className="crm-card">
+              <div className="crm-card-title">📑 Playlists List ({playlists.length})</div>
+              <div className="crm-playlist-grid">
+                {playlists.map(p => (
+                  <div key={p.id} className="crm-playlist-card">
+                    <div className="crm-playlist-title">{p.title}</div>
+                    <div className="crm-playlist-meta">
+                      <span>🎬 {p.videoCount || 0} videos</span>
+                      <span>👁️ {p.visibility}</span>
+                      <span>⏱️ {p.lastUpdated || 'Recently'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                      <select
+                        className="crm-input"
+                        style={{ padding: '4px 8px', fontSize: '12px', flex: 1 }}
+                        value={p.visibility}
+                        onChange={e => crmUpdatePlaylist(p.id, { visibility: e.target.value })}
+                      >
+                        <option value="Public">Public</option>
+                        <option value="Unlisted">Unlisted</option>
+                        <option value="Private">Private</option>
+                      </select>
+                      <button className="crm-action-btn danger" onClick={() => crmDeletePlaylist(p.id)}>
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── SUBTITLES CRM ── */}
+        {activeSection === 'subtitles' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">🌐 1. Add / Configure Video Subtitles</div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Target Video</label>
+                  <select
+                    className="crm-input"
+                    value={newSubDraft.videoId}
+                    onChange={e => {
+                      const v = videos.find(vid => vid.id === e.target.value);
+                      setNewSubDraft(d => ({ ...d, videoId: e.target.value, videoTitle: v?.title || 'Video' }));
+                    }}
+                  >
+                    {videos.map(v => (
+                      <option key={v.id} value={v.id}>{v.title}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Languages (comma-separated)</label>
+                  <input
+                    className="crm-input"
+                    value={newSubDraft.languagesStr}
+                    onChange={e => setNewSubDraft(d => ({ ...d, languagesStr: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-grid-2">
+                  <div className="crm-field">
+                    <label className="crm-field-label">Title & Description State</label>
+                    <select
+                      className="crm-input"
+                      value={newSubDraft.titleDescriptionState}
+                      onChange={e => setNewSubDraft(d => ({ ...d, titleDescriptionState: e.target.value }))}
+                    >
+                      <option value="Published">Published</option>
+                      <option value="Draft">Draft</option>
+                      <option value="Not translated">Not translated</option>
+                    </select>
+                  </div>
+                  <div className="crm-field">
+                    <label className="crm-field-label">Subtitles Track State</label>
+                    <select
+                      className="crm-input"
+                      value={newSubDraft.subtitlesState}
+                      onChange={e => setNewSubDraft(d => ({ ...d, subtitlesState: e.target.value }))}
+                    >
+                      <option value="Published">Published</option>
+                      <option value="Draft">Draft</option>
+                      <option value="Community">Community</option>
+                    </select>
+                  </div>
+                </div>
+                <button className="crm-apply-btn" onClick={handleCreateSubtitleTrack} style={{ marginTop: 8 }}>
+                  ➕ Save Subtitles Track
+                </button>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">📋 Subtitles Registry ({subtitles.length})</div>
+                <div className="crm-demographic-grid" style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                  {subtitles.map(sub => (
+                    <div key={sub.id} className="crm-playlist-card" style={{ padding: '12px' }}>
+                      <div style={{ fontWeight: 600, color: '#e2e8f0' }}>{sub.videoTitle}</div>
+                      <div style={{ fontSize: '12px', color: '#a78bfa', marginTop: 4 }}>
+                        Langs: {Array.isArray(sub.languages) ? sub.languages.join(', ') : sub.languages}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+                        <span className="crm-status-pill crm-status-published">{sub.subtitlesState || 'Published'}</span>
+                        <button
+                          className="crm-action-btn danger"
+                          onClick={() => {
+                            crmDeleteSubtitleTrack(sub.id);
+                            showToast('Subtitle track deleted ✓', 'info');
+                          }}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── COPYRIGHT & CONTENT ID CRM ── */}
+        {activeSection === 'copyright' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">🛡️ 1. Add Copyright Match / Claim</div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Your Video</label>
+                  <select
+                    className="crm-input"
+                    value={newClaimDraft.videoTitle}
+                    onChange={e => setNewClaimDraft(d => ({ ...d, videoTitle: e.target.value }))}
+                  >
+                    {videos.map(v => (
+                      <option key={v.id} value={v.title}>{v.title}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Matching Track / Video</label>
+                  <input
+                    className="crm-input"
+                    value={newClaimDraft.matchingVideoTitle}
+                    onChange={e => setNewClaimDraft(d => ({ ...d, matchingVideoTitle: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Claimant / Channel</label>
+                  <input
+                    className="crm-input"
+                    value={newClaimDraft.matchingChannel}
+                    onChange={e => setNewClaimDraft(d => ({ ...d, matchingChannel: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-grid-2">
+                  <div className="crm-field">
+                    <label className="crm-field-label">Match %</label>
+                    <input
+                      className="crm-input"
+                      value={newClaimDraft.matchPercent}
+                      onChange={e => setNewClaimDraft(d => ({ ...d, matchPercent: e.target.value }))}
+                    />
+                  </div>
+                  <div className="crm-field">
+                    <label className="crm-field-label">Segment (Timestamp)</label>
+                    <input
+                      className="crm-input"
+                      value={newClaimDraft.segment}
+                      onChange={e => setNewClaimDraft(d => ({ ...d, segment: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <button className="crm-apply-btn" onClick={handleCreateClaim} style={{ marginTop: 8 }}>
+                  ➕ Add Claim to Studio Copyright
+                </button>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">📋 Active Matches ({copyrightClaims.length})</div>
+                <div className="crm-demographic-grid" style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                  {copyrightClaims.map(claim => (
+                    <div key={claim.id} className="crm-playlist-card" style={{ padding: '12px' }}>
+                      <div style={{ fontWeight: 600, color: '#f87171' }}>{claim.matchingVideoTitle}</div>
+                      <div style={{ fontSize: '12px', color: '#94a3b8' }}>Video: {claim.videoTitle}</div>
+                      <div style={{ fontSize: '12px', color: '#cbd5e1' }}>Channel: {claim.matchingChannel} · Match: {claim.matchPercent}</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                        <span className="crm-status-pill crm-status-held">{claim.status || 'Active'}</span>
+                        <button
+                          className="crm-action-btn danger"
+                          onClick={() => {
+                            crmDeleteCopyrightClaim(claim.id);
+                            showToast('Claim removed ✓', 'info');
+                          }}
+                        >
+                          🗑️ Resolve
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── AUDIO LIBRARY CRM ── */}
+        {activeSection === 'audio' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">🎵 1. Add Royalty-Free Track</div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Track Title</label>
+                  <input
+                    className="crm-input"
+                    placeholder="e.g. Neon Horizon"
+                    value={newAudioDraft.title}
+                    onChange={e => setNewAudioDraft(d => ({ ...d, title: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Artist</label>
+                  <input
+                    className="crm-input"
+                    value={newAudioDraft.artist}
+                    onChange={e => setNewAudioDraft(d => ({ ...d, artist: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-grid-3">
+                  <div className="crm-field">
+                    <label className="crm-field-label">Duration</label>
+                    <input
+                      className="crm-input"
+                      value={newAudioDraft.duration}
+                      onChange={e => setNewAudioDraft(d => ({ ...d, duration: e.target.value }))}
+                    />
+                  </div>
+                  <div className="crm-field">
+                    <label className="crm-field-label">Genre</label>
+                    <input
+                      className="crm-input"
+                      value={newAudioDraft.genre}
+                      onChange={e => setNewAudioDraft(d => ({ ...d, genre: e.target.value }))}
+                    />
+                  </div>
+                  <div className="crm-field">
+                    <label className="crm-field-label">Mood</label>
+                    <input
+                      className="crm-input"
+                      value={newAudioDraft.mood}
+                      onChange={e => setNewAudioDraft(d => ({ ...d, mood: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <button className="crm-apply-btn" onClick={handleCreateAudioTrack} style={{ marginTop: 8 }}>
+                  ➕ Add Track to Audio Library
+                </button>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">🎧 Audio Catalog ({audioTracks.length})</div>
+                <div className="crm-demographic-grid" style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                  {audioTracks.map(track => (
+                    <div key={track.id} className="crm-geo-row">
+                      <div>
+                        <div style={{ fontWeight: 600, color: '#e2e8f0' }}>{track.title}</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>{track.artist} · {track.genre} · {track.mood}</div>
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#38bdf8' }}>⏱️ {track.duration}</span>
+                      <span style={{ fontSize: '14px' }}>{track.starred ? '⭐' : '☆'}</span>
+                      <button
+                        className="crm-action-btn danger"
+                        onClick={() => {
+                          crmDeleteAudioTrack(track.id);
+                          showToast('Audio track deleted ✓', 'info');
+                        }}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── NOTIFICATIONS CRM ── */}
+        {activeSection === 'notifications' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">🔔 1. Broadcast Studio Notification</div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Notification Title</label>
+                  <input
+                    className="crm-input"
+                    placeholder="e.g. Congratulations! New milestone reached"
+                    value={newNotifDraft.title}
+                    onChange={e => setNewNotifDraft(d => ({ ...d, title: e.target.value }))}
+                  />
+                </div>
+                <div className="crm-field">
+                  <label className="crm-field-label">Message Details</label>
+                  <textarea
+                    className="crm-input"
+                    rows={3}
+                    placeholder="Message description..."
+                    value={newNotifDraft.message}
+                    onChange={e => setNewNotifDraft(d => ({ ...d, message: e.target.value }))}
+                  />
+                </div>
+                <button className="crm-apply-btn" onClick={handleCreateNotification} style={{ marginTop: 8 }}>
+                  📢 Send Notification to Studio
+                </button>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">📬 Active Notifications ({notifications.length})</div>
+                <div className="crm-demographic-grid" style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                  {notifications.map(n => (
+                    <div key={n.id} className="crm-playlist-card" style={{ padding: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 600, color: '#38bdf8' }}>{n.title}</span>
+                        <span style={{ fontSize: '11px', color: '#64748b' }}>{n.time}</span>
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: 4 }}>{n.message}</div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
+                        <button
+                          className="crm-action-btn danger"
+                          onClick={() => {
+                            crmDeleteNotification(n.id);
+                            showToast('Notification removed ✓', 'info');
+                          }}
+                        >
+                          🗑️ Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── SETTINGS & BRANDING CRM ── */}
+        {activeSection === 'settings' && (
+          <div className="crm-section">
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">🎭 Channel Branding & Identity</div>
+                <CRMInput label="Channel Name" value={settingsDraft.name} type="text"
+                  onChange={v => setSettingsDraft(d => ({ ...d, name: v }))} />
+                <CRMInput label="Handle" value={settingsDraft.handle} type="text"
+                  onChange={v => setSettingsDraft(d => ({ ...d, handle: v }))} />
+                <CRMInput label="Avatar URL" value={settingsDraft.avatar} type="text"
+                  onChange={v => setSettingsDraft(d => ({ ...d, avatar: v }))} />
+                <CRMInput label="Banner URL" value={settingsDraft.banner} type="text"
+                  onChange={v => setSettingsDraft(d => ({ ...d, banner: v }))} />
+                <CRMInput label="Country" value={settingsDraft.country} type="text"
+                  onChange={v => setSettingsDraft(d => ({ ...d, country: v }))} />
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">⚙️ Studio Preferences & Defaults</div>
+                <CRMInput label="Currency" value={settingsDraft.currency} type="text"
+                  onChange={v => setSettingsDraft(d => ({ ...d, currency: v }))} />
+                <div className="crm-field">
+                  <label className="crm-field-label">Default Visibility</label>
+                  <select
+                    className="crm-input"
+                    value={settingsDraft.defaultVisibility}
+                    onChange={e => setSettingsDraft(d => ({ ...d, defaultVisibility: e.target.value }))}
+                  >
+                    <option value="Public">Public</option>
+                    <option value="Unlisted">Unlisted</option>
+                    <option value="Private">Private</option>
+                  </select>
+                </div>
+                <CRMInput label="Default Category" value={settingsDraft.defaultCategory} type="text"
+                  onChange={v => setSettingsDraft(d => ({ ...d, defaultCategory: v }))} />
+                <CRMInput label="Keywords / Channel Tags" value={settingsDraft.keywords} type="text"
+                  onChange={v => setSettingsDraft(d => ({ ...d, keywords: v }))} />
+                <CRMInput label="Blocked Words (Moderation)" value={settingsDraft.blockedWords} type="text"
+                  onChange={v => setSettingsDraft(d => ({ ...d, blockedWords: v }))} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+              <button className="crm-apply-btn" onClick={handleSaveSettings}>
+                💾 Save Settings & Branding to InsForge
               </button>
             </div>
           </div>
@@ -1311,6 +3261,89 @@ export default function CRM() {
                 <li>Thumbnails and subscriber gains reflect instantly in Dashboard, Content, and Video Analytics.</li>
                 <li>The YouTube Studio UI reflects changes instantly via shared state.</li>
               </ul>
+            </div>
+          </div>
+        )}
+
+        {/* ── DATABASE & CLOUD CONTROL ── */}
+        {activeSection === 'database' && (
+          <div className="crm-section">
+            <div className="crm-card">
+              <div className="crm-card-title">🗄️ InsForge Backend Infrastructure</div>
+              <div className="crm-db-stat-grid">
+                <div className="crm-db-stat-tile">
+                  <div className="crm-db-stat-tile-title">Channel Info</div>
+                  <div className="crm-db-stat-tile-val">1 Row</div>
+                </div>
+                <div className="crm-db-stat-tile">
+                  <div className="crm-db-stat-tile-title">Videos</div>
+                  <div className="crm-db-stat-tile-val">{videos.length} Rows</div>
+                </div>
+                <div className="crm-db-stat-tile">
+                  <div className="crm-db-stat-tile-title">Comments</div>
+                  <div className="crm-db-stat-tile-val">{comments.length} Rows</div>
+                </div>
+                <div className="crm-db-stat-tile">
+                  <div className="crm-db-stat-tile-title">Playlists</div>
+                  <div className="crm-db-stat-tile-val">{playlists.length} Rows</div>
+                </div>
+                <div className="crm-db-stat-tile">
+                  <div className="crm-db-stat-tile-title">Subtitles</div>
+                  <div className="crm-db-stat-tile-val">{subtitles.length} Rows</div>
+                </div>
+                <div className="crm-db-stat-tile">
+                  <div className="crm-db-stat-tile-title">Audio Tracks</div>
+                  <div className="crm-db-stat-tile-val">{audioTracks.length} Rows</div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 16, fontSize: '13px', color: '#94a3b8' }}>
+                <div><strong>Backend Base URL:</strong> <code style={{ color: '#38bdf8' }}>https://zt9vsanb.ap-southeast.insforge.app</code></div>
+                <div><strong>Linked Project ID:</strong> <code>fa322b88-223f-474a-bb6c-770596286e21</code></div>
+                <div><strong>Status:</strong> <span style={{ color: '#4ade80' }}>● Connected & Active</span></div>
+                <div><strong>Last Database Sync:</strong> {lastDatabaseSync ? new Date(lastDatabaseSync).toLocaleString() : 'Just now'}</div>
+              </div>
+            </div>
+
+            <div className="crm-grid-2">
+              <div className="crm-card">
+                <div className="crm-card-title">🔄 Cloud Synchronization</div>
+                <p className="crm-card-desc">Pull latest records from InsForge cloud or force push local memory state to cloud database.</p>
+                <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                  <button
+                    className="crm-btn crm-btn-save"
+                    onClick={async () => {
+                      await persistToDatabase();
+                      showToast('All state pushed to InsForge database ✓', 'success');
+                    }}
+                  >
+                    ⬆️ Force Push to Cloud
+                  </button>
+                  <button
+                    className="crm-btn crm-btn-edit"
+                    onClick={async () => {
+                      const ok = await loadFromDatabase();
+                      if (ok) showToast('Loaded latest state from InsForge cloud ✓', 'success');
+                    }}
+                  >
+                    ⬇️ Pull from Cloud
+                  </button>
+                </div>
+              </div>
+
+              <div className="crm-card">
+                <div className="crm-card-title">💾 Backup & Restore JSON</div>
+                <p className="crm-card-desc">Download a complete snapshot of all CRM tables or restore from an existing JSON file.</p>
+                <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                  <button className="crm-btn crm-btn-edit" onClick={handleExportStateJSON}>
+                    📥 Export JSON Backup
+                  </button>
+                  <label className="crm-btn crm-btn-cancel" style={{ cursor: 'pointer' }}>
+                    📤 Import JSON
+                    <input type="file" accept=".json" onChange={handleImportStateJSON} style={{ display: 'none' }} />
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -28,25 +28,27 @@ export const RAW_VIDEOS = [
     id: 'VID001',
     title: 'This Man Truly Loves You But Why Is There Still Another Woman in His Life?',
     description: 'This Man Truly Loves You But Why Is There Still Another Woman in His Life?',
-    duration: '15:20',
-    durationSecs: 920,
-    avgViewDuration: '11:27',
-    avgViewDurationSecs: 687,
-    views: 274365,
+    duration: '28:17',
+    durationSecs: 1697,
+    avgViewDuration: '19:41',
+    avd: '19:41',
+    avgViewDurationSecs: 1181,
+    views: 168741,
     ctr: 8.9,
-    rpm: 435.066426,
-    cpm: 791.03,
-    publishDate: '2026-07-17',
+    rpm: 1169.74,
+    cpm: 2011.95,
+    publishDate: '2026-08-12',
     thumbnail: '/thumbnails/latest_video.png',
     category: 'Entertainment',
-    watchTimeHrs: 52346,
-    revenue: 119367,
-    revenueFormatted: '₹1,19,367.00',
-    watchTimeHrsFormatted: '52.3K hrs',
-    subscribersGained: 4946,
+    watchTimeHrs: 55390,
+    revenue: 197437.48,
+    revenueFormatted: '₹1,97,437.48',
+    watchTimeHrsFormatted: '55.4K hrs',
+    subscribersGained: 2135,
     subscribersLost: 0,
-    netSubscribers: 4946,
-    viewsFormatted: '274.4K'
+    netSubscribers: 2135,
+    viewsFormatted: '168.7K',
+    realtimeViews: 3452
   },
   {
     id: 'VID002',
@@ -277,40 +279,45 @@ export function generateDailyTimeSeries(daysCount = 365, anchorDate = '2026-08-1
     const dateStr = d.toISOString().split('T')[0];
     const dayOfWeek = d.getUTCDay(); // 0 = Sun, 6 = Sat
 
-    // Weekend multiplier (Sat/Sun get 1.35x - 1.55x)
+    // Weekend multiplier (Sat/Sun get 1.25x - 1.45x, Fri gets 1.15x)
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const weekendMultiplier = isWeekend ? 1.42 : 1.0;
+    const isFriday = dayOfWeek === 5;
+    const weekendMultiplier = isWeekend ? (1.30 + 0.14 * Math.sin(i * 3.7)) : isFriday ? 1.16 : 0.96;
 
-    // Organic sine fluctuation + deterministic harmonic wave (no random flicker on refresh)
-    const seasonalFactor = 1 + 0.15 * Math.sin((i / 365) * 2 * Math.PI);
-    const noise = 1.0 + 0.09 * Math.sin(i * 1.618) + 0.04 * Math.cos(i * 3.1415);
+    // Rich multi-harmonic organic fluctuations creating natural peaks, dips and day-to-day randomness
+    const seasonalFactor = 1 + 0.12 * Math.sin((i / 365) * 2 * Math.PI);
+    const noise = 1.0 + 0.32 * Math.sin(i * 1.83 + 0.7)
+                      + 0.22 * Math.cos(i * 3.41 + 1.4)
+                      + 0.16 * Math.sin(i * 7.19 + 2.3)
+                      + 0.11 * Math.cos(i * 13.37 + 0.9)
+                      + 0.08 * Math.sin(i * 29.17);
 
     // Upload day spikes
     let uploadBoost = 1.0;
     PROCESSED_VIDEOS.forEach(v => {
       if (v.publishDate === dateStr) {
-        uploadBoost += 2.8;
+        uploadBoost += 2.4;
       }
     });
 
-    const baseDailyViews = Math.round(52000 * weekendMultiplier * seasonalFactor * noise * uploadBoost);
-    const ctr = parseFloat((7.8 + 0.9 * Math.sin(i * 2.3 + 0.7)).toFixed(1));
+    const baseDailyViews = Math.max(8000, Math.round(52000 * weekendMultiplier * seasonalFactor * noise * uploadBoost));
+    const ctr = parseFloat(Math.max(4.2, (7.8 + 1.2 * Math.sin(i * 2.3 + 0.7) + 0.7 * Math.cos(i * 5.1))).toFixed(1));
     const impressions = Math.round(baseDailyViews / (ctr / 100));
 
-    const avgDurationSecs = Math.round(240 + 25 * Math.cos(i * 1.1 + 0.3));
+    const avgDurationSecs = Math.max(60, Math.round(240 + 35 * Math.cos(i * 1.1 + 0.3) + 20 * Math.sin(i * 4.2)));
     const watchTimeHrs = parseFloat((baseDailyViews * (avgDurationSecs / 3600)).toFixed(1));
 
-    // Daily RPM around $33.64 average
-    const rpm = parseFloat((33.64 + 1.2 * Math.sin(i * 1.9 + 1.2)).toFixed(2));
+    // Daily RPM
+    const rpm = parseFloat((33.64 + 2.8 * Math.sin(i * 1.9 + 1.2) + 1.4 * Math.cos(i * 4.7)).toFixed(2));
     const cpm = parseFloat((rpm * 1.72).toFixed(2));
     const revenue = parseFloat(((baseDailyViews / 1000) * rpm).toFixed(2));
 
-    const subsGained = Math.round(baseDailyViews * 0.012 * (1.0 + 0.08 * Math.sin(i * 2.8)));
-    const subsLost = Math.round(subsGained * (0.12 + 0.02 * Math.cos(i * 1.7)));
+    const subsGained = Math.round(baseDailyViews * 0.012 * (1.0 + 0.20 * Math.sin(i * 2.8) + 0.12 * Math.cos(i * 6.3)));
+    const subsLost = Math.round(subsGained * (0.12 + 0.04 * Math.cos(i * 1.7)));
     cumulativeSubs += (subsGained - subsLost);
 
-    const likes = Math.round(baseDailyViews * 0.044);
-    const comments = Math.round(baseDailyViews * 0.0032);
+    const likes = Math.round(baseDailyViews * (0.044 + 0.008 * Math.sin(i * 2.1)));
+    const comments = Math.round(baseDailyViews * (0.0032 + 0.0009 * Math.cos(i * 3.3)));
 
     dailyData.push({
       date: dateStr,
@@ -336,7 +343,7 @@ export function generateDailyTimeSeries(daysCount = 365, anchorDate = '2026-08-1
   return dailyData;
 }
 
-export const DAILY_SERIES = generateDailyTimeSeries(365, '2026-08-12');
+export const DAILY_SERIES = generateDailyTimeSeries(365, '2026-09-18');
 
 /**
  * Filter daily metrics based on date range boundaries
@@ -502,7 +509,7 @@ export function getAudienceBreakdown(totalViews) {
 /**
  * Realtime continuous data generator (Last 60 minutes & Last 48 hours)
  */
-export function generateRealtimeDataset(anchorDate = '2026-08-12') {
+export function generateRealtimeDataset(anchorDate = '2026-09-18') {
   const last60Minutes = [];
   const now = new Date(anchorDate.includes('T') ? anchorDate : `${anchorDate}T12:00:00Z`);
 

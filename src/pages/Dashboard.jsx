@@ -173,7 +173,7 @@ const Dashboard = () => {
                   <div className="stat-row lv-highlight-row">
                     <span className="stat-label lv-hl-label">Average view duration</span>
                     <span className="stat-value lv-hl-val">
-                      {latestVideo.avd || '1:45'}
+                      {latestVideo.avgViewDuration || latestVideo.avd || '19:41'}
                       <StudioDownBadge color="#aaaaaa" style={{ marginLeft: '6px' }} />
                     </span>
                   </div>

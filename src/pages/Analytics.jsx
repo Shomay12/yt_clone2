@@ -181,9 +181,9 @@ const Analytics = () => {
     if (n === 0) return [];
 
     // Determine earliest published video date
-    let firstVideoDateStr = '2026-02-14';
+    let firstVideoDateStr = '2026-08-12';
     if (isVideoMode && video) {
-      firstVideoDateStr = video.publishDate || video.date || '2026-02-14';
+      firstVideoDateStr = video.publishDate || video.date || '2026-08-12';
     } else {
       const videoDates = (videos || []).map(v => v.publishDate || v.date).filter(Boolean).sort();
       if (videoDates.length > 0) {
@@ -195,13 +195,7 @@ const Analytics = () => {
     const rampUpStartDateObj = new Date(firstVidDateObj);
     rampUpStartDateObj.setDate(rampUpStartDateObj.getDate() - 3);
 
-    // Step 1: Compute baseline values with smooth upward incline & zero before first video date - 3 days
-    const basePoints = list.map((item, index) => {
-      const progress = n > 1 ? index / (n - 1) : 0.5;
-      const inclineMultiplier = 0.78 + progress * 0.44;
-      const wave = Math.sin(progress * Math.PI * 2.2) * 0.12;
-      const combinedMultiplier = inclineMultiplier + wave;
-
+    return list.map((item, index) => {
       // Zero-ramp factor: 0 before rampUpStartDate, smooth ramp to 1 at firstVidDate
       const itemDateObj = new Date(item.date);
       let zeroRampFactor = 1.0;
@@ -213,20 +207,24 @@ const Analytics = () => {
         zeroRampFactor = totalDiff > 0 ? Math.min(1.0, Math.max(0.0, currentDiff / totalDiff)) : 1.0;
       }
 
-      const rawVal = item[selectedMetric] || 0;
-      const val = typeof rawVal === 'number' ? Math.round(rawVal * combinedMultiplier * zeroRampFactor) : (zeroRampFactor === 0 ? 0 : rawVal);
-
       const rawViews = item.views || 0;
-      const views = Math.round(rawViews * combinedMultiplier * zeroRampFactor);
+      const views = Math.round(rawViews * zeroRampFactor);
 
       const rawWatch = item.watchTimeHrs || 0;
-      const watchTimeHrs = parseFloat((rawWatch * combinedMultiplier * zeroRampFactor).toFixed(1));
+      const watchTimeHrs = parseFloat((rawWatch * zeroRampFactor).toFixed(1));
 
       const rawRev = item.revenue || 0;
-      const revenue = parseFloat((rawRev * combinedMultiplier * zeroRampFactor).toFixed(2));
+      const revenue = parseFloat((rawRev * zeroRampFactor).toFixed(2));
 
       const rawSubs = item.subscribersNet || 0;
-      const subscribersNet = Math.round(rawSubs * combinedMultiplier * zeroRampFactor);
+      const subscribersNet = Math.round(rawSubs * zeroRampFactor);
+
+      const rawVal = item[selectedMetric] || 0;
+      const val = typeof rawVal === 'number' ? Math.round(rawVal * zeroRampFactor) : (zeroRampFactor === 0 ? 0 : rawVal);
+
+      // Typical performance grey boundary band (dynamic baseline envelope around the metric)
+      const baseTypical = typeof val === 'number' ? val * 0.88 : 1000;
+      const typicalHarmonic = 1 + 0.12 * Math.sin(index * 0.85);
 
       return {
         ...item,
@@ -234,45 +232,10 @@ const Analytics = () => {
         watchTimeHrs,
         revenue,
         subscribersNet,
-        val
-      };
-    });
-
-    // Step 2: Apply 5-point weighted Moving Average smoothing
-    const windowSize = Math.min(5, Math.floor(n / 2) || 1);
-
-    return basePoints.map((item, index) => {
-      let sumVal = 0, sumViews = 0, sumWatch = 0, sumRev = 0, sumSubs = 0, weightSum = 0;
-
-      for (let offset = -windowSize; offset <= windowSize; offset++) {
-        const idx = Math.min(Math.max(index + offset, 0), n - 1);
-        const weight = 1 / (1 + Math.abs(offset) * 0.5);
-        sumVal += (basePoints[idx].val || 0) * weight;
-        sumViews += (basePoints[idx].views || 0) * weight;
-        sumWatch += (basePoints[idx].watchTimeHrs || 0) * weight;
-        sumRev += (basePoints[idx].revenue || 0) * weight;
-        sumSubs += (basePoints[idx].subscribersNet || 0) * weight;
-        weightSum += weight;
-      }
-
-      const smoothedVal = Math.round(sumVal / weightSum);
-      const smoothedViews = Math.round(sumViews / weightSum);
-      const smoothedWatch = parseFloat((sumWatch / weightSum).toFixed(1));
-      const smoothedRev = parseFloat((sumRev / weightSum).toFixed(2));
-      const smoothedSubs = Math.round(sumSubs / weightSum);
-
-      const baseTypical = typeof smoothedVal === 'number' ? smoothedVal * 0.85 : 1000;
-
-      return {
-        ...item,
-        views: smoothedViews,
-        watchTimeHrs: smoothedWatch,
-        revenue: smoothedRev,
-        subscribersNet: smoothedSubs,
-        [selectedMetric]: smoothedVal,
-        typicalLower: Math.round(baseTypical * 0.72),
-        typicalUpper: Math.round(baseTypical * 1.25),
-        revenueTypicalUpper: Math.round(smoothedRev * 1.15)
+        [selectedMetric]: val,
+        typicalLower: Math.round(baseTypical * 0.65 * typicalHarmonic),
+        typicalUpper: Math.round(baseTypical * 1.35 * typicalHarmonic),
+        revenueTypicalUpper: Math.round(revenue * 1.25)
       };
     });
   }, [daily, selectedMetric, selectedDateRange, isVideoMode, aggregated, videos, video]);
@@ -430,6 +393,7 @@ const Analytics = () => {
     {
       group: 'months',
       items: [
+        { key: 'september', label: 'September' },
         { key: 'august', label: 'August' },
         { key: 'july', label: 'July' },
         { key: 'june', label: 'June' }
@@ -861,7 +825,7 @@ const Analytics = () => {
                 <div className="realtime-status-row">
                   <span className="live-dot" /> Updating live
                 </div>
-                <div className="realtime-big-number">{isVideoMode ? (currentVideo.views ? Math.round(Number(currentVideo.views) * 0.0055).toLocaleString('en-IN') : '183') : (channelInfo.subscribers?.toLocaleString('en-IN') || aggregated.subscribersNet?.toLocaleString('en-IN'))}</div>
+                <div className="realtime-big-number">{isVideoMode ? (currentVideo.realtimeViews ? Number(currentVideo.realtimeViews).toLocaleString('en-IN') : (currentVideo.views ? Math.round(Number(currentVideo.views) * 0.0205).toLocaleString('en-IN') : '183')) : (channelInfo.subscribers?.toLocaleString('en-IN') || aggregated.subscribersNet?.toLocaleString('en-IN'))}</div>
                 <div className="realtime-sub-text">{isVideoMode ? 'Views · Last 48 hours' : 'Subscribers'}</div>
 
                 {!isVideoMode && <button className="see-live-count-btn">See live count</button>}

@@ -58,9 +58,9 @@ export const fmtS = (s) => {
   return `${prefix}${num.toLocaleString('en-IN')}`;
 };
 
-const INITIAL_ANCHOR_DATE = '2026-08-13';
+const INITIAL_ANCHOR_DATE = '2026-09-18';
 const INITIAL_REALTIME = generateRealtimeDataset(INITIAL_ANCHOR_DATE);
-const INITIAL_LAST28_DAILY = filterDailyMetricsByRange(DAILY_SERIES, '2026-07-17', '2026-08-13');
+const INITIAL_LAST28_DAILY = filterDailyMetricsByRange(DAILY_SERIES, '2026-08-22', '2026-09-18');
 const INITIAL_AGG = aggregateMetrics(INITIAL_LAST28_DAILY);
 
 // Baseline lifetime totals from the original simulation data
@@ -260,9 +260,45 @@ const EMPTY_STATE = {
 };
 
 function applySpreadsheetData(data) {
+  const rawVids = data.videos && data.videos.length > 0 ? data.videos : EMPTY_STATE.videos;
+  const mergedVideos = rawVids.map((v, i) => {
+    if (v.id === 'VID001' || i === 0) {
+      return {
+        ...v,
+        ...EMPTY_STATE.videos[0],
+        ...v,
+        title: EMPTY_STATE.videos[0].title,
+        description: EMPTY_STATE.videos[0].description,
+        views: 168741,
+        viewsFormatted: '168.7K',
+        watchTimeHrs: 55390,
+        watchTimeHrsFormatted: '55.4K hrs',
+        duration: '28:17',
+        durationSecs: 1697,
+        avgViewDuration: '19:41',
+        avgViewDurationSecs: 1181,
+        avd: '19:41',
+        subscribersGained: 2135,
+        subscribersLost: 0,
+        netSubscribers: 2135,
+        subscribersNetFormatted: '+2.1K',
+        subscribersGainedFormatted: '+2.1K',
+        revenue: 197437.48,
+        revenueFormatted: '₹1,97,437.48',
+        rpm: 1169.74,
+        cpm: 2011.95,
+        realtimeViews: 3452,
+        publishDate: '2026-08-12',
+        date: '2026-08-12',
+        thumbnail: '/thumbnails/latest_video.png'
+      };
+    }
+    return v;
+  });
+
   return {
     channelInfo: { ...EMPTY_STATE.channelInfo, ...(data.channelInfo || {}) },
-    videos: data.videos && data.videos.length > 0 ? data.videos : EMPTY_STATE.videos,
+    videos: mergedVideos,
     shorts: data.shorts || [],
     liveStreams: data.liveStreams || [],
     playlists: data.playlists && data.playlists.length > 0 ? data.playlists : EMPTY_STATE.playlists,
@@ -305,10 +341,10 @@ export const useStore = create(
       databaseError: null,
 
       // Date filtering state
-      simulationAnchorDate: '2026-08-13',
+      simulationAnchorDate: '2026-09-18',
       selectedDateRange: 'last28',
-      customStartDate: '2026-07-17',
-      customEndDate: '2026-08-13',
+      customStartDate: '2026-08-22',
+      customEndDate: '2026-09-18',
       realtimeDataset: INITIAL_REALTIME,
 
       ...EMPTY_STATE,
@@ -335,7 +371,26 @@ export const useStore = create(
               };
             }
             if (res.videos && res.videos.length > 0) {
-              updates.videos = res.videos;
+              updates.videos = res.videos.map((v, i) => {
+                if (v.id === 'VID001' || i === 0) {
+                  return {
+                    ...v,
+                    ...EMPTY_STATE.videos[0],
+                    ...v,
+                    title: (v.title && !v.title.includes('This Man Truly')) ? v.title : EMPTY_STATE.videos[0].title,
+                    description: (v.description && !v.description.includes('This Man Truly')) ? v.description : EMPTY_STATE.videos[0].description,
+                    realtimeViews: v.realtimeViews || 3452,
+                    publishDate: v.publishDate || '2026-08-12',
+                    thumbnail: v.thumbnail || '/thumbnails/latest_video.png',
+                    views: Number(v.views) || 168741,
+                    watchTimeHrs: v.watchTimeHrs ? Number(v.watchTimeHrs) : 55390,
+                    revenue: v.revenue ? Number(v.revenue) : 197437.48,
+                    subscribersGained: v.subscribersGained ? Number(v.subscribersGained) : 2135,
+                    netSubscribers: v.netSubscribers ? Number(v.netSubscribers) : 2135
+                  };
+                }
+                return v;
+              });
             }
             if (res.comments && res.comments.length > 0) {
               updates.comments = res.comments;
@@ -357,7 +412,26 @@ export const useStore = create(
                 updates.channelInfo = { ...curState.channelInfo, ...updates.channelInfo, ...res.stateData.channelInfo };
               }
               if (res.stateData.videos && res.stateData.videos.length > 0) {
-                updates.videos = res.stateData.videos;
+                updates.videos = res.stateData.videos.map((v, i) => {
+                  if (v.id === 'VID001' || i === 0) {
+                    return {
+                      ...v,
+                      ...EMPTY_STATE.videos[0],
+                      ...v,
+                      title: EMPTY_STATE.videos[0].title,
+                      description: EMPTY_STATE.videos[0].description,
+                      realtimeViews: v.realtimeViews || 3452,
+                      publishDate: v.publishDate || '2026-08-12',
+                      thumbnail: v.thumbnail || '/thumbnails/latest_video.png',
+                      views: Number(v.views) || 168741,
+                      watchTimeHrs: v.watchTimeHrs ? Number(v.watchTimeHrs) : 55390,
+                      revenue: v.revenue ? Number(v.revenue) : 197437.48,
+                      subscribersGained: v.subscribersGained ? Number(v.subscribersGained) : 2135,
+                      netSubscribers: v.netSubscribers ? Number(v.netSubscribers) : 2135
+                    };
+                  }
+                  return v;
+                });
               }
               if (res.stateData.comments && res.stateData.comments.length > 0) {
                 updates.comments = res.stateData.comments;
@@ -429,7 +503,7 @@ export const useStore = create(
       // Date range changer
       setDateRange: (rangeKey, customStart = null, customEnd = null) => {
         set(state => {
-          const updates = { 
+          const updates = {
             selectedDateRange: rangeKey,
             dateRangeVersion: (state.dateRangeVersion || 0) + 1
           };
@@ -518,6 +592,9 @@ export const useStore = create(
         } else if (activeKey === 'august') {
           startStr = '2026-08-01';
           endStr = todayStr > '2026-08-31' ? '2026-08-31' : todayStr;
+        } else if (activeKey === 'september') {
+          startStr = '2026-09-01';
+          endStr = todayStr > '2026-09-30' ? '2026-09-30' : todayStr;
         } else if (activeKey === 'july') {
           startStr = '2026-07-01';
           endStr = '2026-07-31';
@@ -552,8 +629,8 @@ export const useStore = create(
           const videoSubsGained = (targetVideo?.subscribersGained !== undefined && targetVideo?.subscribersGained !== null && Number(targetVideo?.subscribersGained) > 0)
             ? Number(targetVideo.subscribersGained)
             : ((targetVideo?.netSubscribers !== undefined && targetVideo?.netSubscribers !== null && Number(targetVideo?.netSubscribers) > 0)
-                ? Number(targetVideo.netSubscribers)
-                : Math.round(videoViews * 0.014));
+              ? Number(targetVideo.netSubscribers)
+              : Math.round(videoViews * 0.014));
           const videoSubsLost = targetVideo?.subscribersLost !== undefined
             ? Number(targetVideo.subscribersLost)
             : 0;
@@ -619,28 +696,28 @@ export const useStore = create(
         const currentTotalRevenue = storeVideos.reduce((acc, v) => acc + (v.revenue != null ? Number(v.revenue) : ((Number(v.views) || 0) / 1000 * (Number(v.rpm) || 33.64))), 0);
         const currentTotalWatch = storeVideos.reduce((acc, v) => acc + (v.watchTimeHrs != null ? Number(v.watchTimeHrs) : ((Number(v.views) || 0) * (Number(v.avgViewDurationSecs) || 105) / 3600)), 0);
         const scaledSubsGained = storeVideos.reduce((acc, v) => acc + Number(v.subscribersGained !== undefined ? v.subscribersGained : (v.netSubscribers !== undefined ? v.netSubscribers : (v.subscribers || 0))), 0) || Math.round(agg.subscribersNet);
-        const scaledSubsLost   = 0;
-        const scaledSubsNet    = scaledSubsGained;
+        const scaledSubsLost = 0;
+        const scaledSubsNet = scaledSubsGained;
 
         const ci = state.channelInfo || {};
         const is28Days = (activeKey === 'last28');
-        
+
         // Dynamic channel totals directly from actual video sums
-        const base28Views   = (ci.hasExplicitChannelMetrics && ci.viewsLast28Days !== undefined && ci.viewsLast28Days > 0) ? ci.viewsLast28Days : currentTotalViews;
+        const base28Views = (ci.hasExplicitChannelMetrics && ci.viewsLast28Days !== undefined && ci.viewsLast28Days > 0) ? ci.viewsLast28Days : currentTotalViews;
         const base28Revenue = (ci.hasExplicitChannelMetrics && ci.revenueLast28Days !== undefined && ci.revenueLast28Days > 0) ? ci.revenueLast28Days : currentTotalRevenue;
-        const base28Watch   = (ci.hasExplicitChannelMetrics && ci.watchTimeLast28Days !== undefined && ci.watchTimeLast28Days > 0) ? ci.watchTimeLast28Days : currentTotalWatch;
+        const base28Watch = (ci.hasExplicitChannelMetrics && ci.watchTimeLast28Days !== undefined && ci.watchTimeLast28Days > 0) ? ci.watchTimeLast28Days : currentTotalWatch;
         const base28SubsNet = (ci.hasExplicitChannelMetrics && ci.subscribersGainedLast28Days !== undefined && ci.subscribersGainedLast28Days > 0) ? ci.subscribersGainedLast28Days : scaledSubsNet;
 
-        const finalViews   = is28Days ? base28Views : Math.round(base28Views * (agg.views / (INITIAL_AGG.views || 1)));
+        const finalViews = is28Days ? base28Views : Math.round(base28Views * (agg.views / (INITIAL_AGG.views || 1)));
         const finalRevenue = is28Days ? base28Revenue : parseFloat((base28Revenue * (agg.revenue / (INITIAL_AGG.revenue || 1))).toFixed(2));
-        const finalWatch   = is28Days ? base28Watch : parseFloat((base28Watch * (agg.watchTimeHrs / (INITIAL_AGG.watchTimeHrs || 1))).toFixed(1));
+        const finalWatch = is28Days ? base28Watch : parseFloat((base28Watch * (agg.watchTimeHrs / (INITIAL_AGG.watchTimeHrs || 1))).toFixed(1));
         const finalSubsNet = is28Days ? base28SubsNet : Math.round(base28SubsNet * (agg.subscribersNet / (INITIAL_AGG.subscribersNet || 1)));
         const finalImpressions = Math.round(finalViews * 11.2);
 
         const viewsFmt = fmtV(finalViews);
         const watchFmt = fmtW(finalWatch);
-        const revFmt   = formatINR(finalRevenue);
-        const subsFmt  = fmtS(finalSubsNet);
+        const revFmt = formatINR(finalRevenue);
+        const subsFmt = fmtS(finalSubsNet);
 
         // Scale daily chart proportionally so chart shape is preserved
         const simDailyTotal = filteredDaily.reduce((acc, d) => acc + (d.views || 0), 0) || 1;
@@ -648,12 +725,12 @@ export const useStore = create(
           const w = (d.views || 0) / simDailyTotal;
           return {
             ...d,
-            views:          Math.round(finalViews   * w),
-            revenue:        parseFloat((finalRevenue * w).toFixed(2)),
-            watchTimeHrs:   parseFloat((finalWatch   * w).toFixed(1)),
-            subscribersNet: Math.round(finalSubsNet  * w),
-            impressions:    Math.round(finalImpressions * w),
-            ctr:            agg.ctr || 8.9,
+            views: Math.round(finalViews * w),
+            revenue: parseFloat((finalRevenue * w).toFixed(2)),
+            watchTimeHrs: parseFloat((finalWatch * w).toFixed(1)),
+            subscribersNet: Math.round(finalSubsNet * w),
+            impressions: Math.round(finalImpressions * w),
+            ctr: agg.ctr || 8.9,
           };
         });
 
@@ -662,46 +739,46 @@ export const useStore = create(
           daily: scaledDaily,
           aggregated: {
             ...agg,
-            views:                   finalViews,
-            viewsFormatted:          viewsFmt,
-            watchTimeHrs:            finalWatch,
-            watchTimeHrsFormatted:   watchFmt,
-            revenue:                 finalRevenue,
-            revenueFormatted:        revFmt,
-            subscribersNet:          finalSubsNet,
+            views: finalViews,
+            viewsFormatted: viewsFmt,
+            watchTimeHrs: finalWatch,
+            watchTimeHrsFormatted: watchFmt,
+            revenue: finalRevenue,
+            revenueFormatted: revFmt,
+            subscribersNet: finalSubsNet,
             subscribersNetFormatted: subsFmt,
-            subscribersGained:       scaledSubsGained,
-            subscribersLost:         scaledSubsLost,
-            impressions:             finalImpressions,
-            impressionsFormatted:    fmtV(finalImpressions),
-            ctr:                     agg.ctr || 8.9,
-            rpm:                     finalViews > 0 ? parseFloat(((finalRevenue / finalViews) * 1000).toFixed(2)) : (agg.rpm || 33.64),
-            cpm:                     agg.cpm || 58.00,
+            subscribersGained: scaledSubsGained,
+            subscribersLost: scaledSubsLost,
+            impressions: finalImpressions,
+            impressionsFormatted: fmtV(finalImpressions),
+            ctr: agg.ctr || 8.9,
+            rpm: finalViews > 0 ? parseFloat(((finalRevenue / finalViews) * 1000).toFixed(2)) : (agg.rpm || 33.64),
+            cpm: agg.cpm || 58.00,
           },
           trafficSources: state.trafficSourcesCustom && state.trafficSourcesCustom.length > 0
             ? state.trafficSourcesCustom.map(t => ({
-                ...t,
-                views: Math.round(finalViews * (t.percentage / 100))
-              }))
+              ...t,
+              views: Math.round(finalViews * (t.percentage / 100))
+            }))
             : getTrafficSources(finalViews),
           searchTerms: state.searchTermsCustom || [],
           externalSources: state.externalSourcesCustom || [],
           audience: state.audienceCustom
             ? {
-                ...getAudienceBreakdown(finalViews),
-                geographies: (state.audienceCustom.geographies || []).map(g => ({
-                  ...g,
-                  views: Math.round(finalViews * (g.percentage / 100))
-                })),
-                ageGender: state.audienceCustom.ageGender || [],
-                subtitleLanguages: state.audienceCustom.subtitleLanguages || [],
-                viewerWatchBehavior: [
-                  { type: 'Returning viewers', percentage: state.audienceCustom.returningViewers || 34.2, description: 'Viewers who watched your channel before and returned' },
-                  { type: 'New viewers', percentage: state.audienceCustom.newViewers || 65.8, description: 'Viewers who watched your channel for the first time' }
-                ],
-                subscribedWatchTimePct: state.audienceCustom.subscribedWatchTimePct || 41.5,
-                nonSubscribedWatchTimePct: state.audienceCustom.nonSubscribedWatchTimePct || 58.5
-              }
+              ...getAudienceBreakdown(finalViews),
+              geographies: (state.audienceCustom.geographies || []).map(g => ({
+                ...g,
+                views: Math.round(finalViews * (g.percentage / 100))
+              })),
+              ageGender: state.audienceCustom.ageGender || [],
+              subtitleLanguages: state.audienceCustom.subtitleLanguages || [],
+              viewerWatchBehavior: [
+                { type: 'Returning viewers', percentage: state.audienceCustom.returningViewers || 34.2, description: 'Viewers who watched your channel before and returned' },
+                { type: 'New viewers', percentage: state.audienceCustom.newViewers || 65.8, description: 'Viewers who watched your channel for the first time' }
+              ],
+              subscribedWatchTimePct: state.audienceCustom.subscribedWatchTimePct || 41.5,
+              nonSubscribedWatchTimePct: state.audienceCustom.nonSubscribedWatchTimePct || 58.5
+            }
             : getAudienceBreakdown(finalViews),
           revenueBreakdown: state.revenueCustom || {}
         };
@@ -1587,8 +1664,8 @@ export const useStore = create(
       }
     }),
     {
-      name: 'yt-studio-analytics-v5',
-      storage: createJSONStorage(() => (typeof window !== 'undefined' && window.localStorage ? window.localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} })),
+      name: 'yt-studio-analytics-v10',
+      storage: createJSONStorage(() => (typeof window !== 'undefined' && window.localStorage ? window.localStorage : { getItem: () => null, setItem: () => { }, removeItem: () => { } })),
       onRehydrateStorage: () => (state) => {
         if (state) {
           if (state.channelInfo) {

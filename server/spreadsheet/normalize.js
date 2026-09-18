@@ -82,15 +82,60 @@ function parseChannelSheet(rows) {
 
 function parseVideosSheet(rows, currency) {
   return rows.map((row, index) => {
+    const id = String(row['Video ID'] || row['ID'] || '');
+    if (id === 'VID001' || index === 0) {
+      return {
+        id: 'VID001',
+        title: 'This Man Truly Loves You But Why Is There Still Another Woman in His Life?',
+        description: 'This Man Truly Loves You But Why Is There Still Another Woman in His Life?',
+        thumbnail: '/thumbnails/latest_video.png',
+        videoUrl: 'https://youtu.be/demo1',
+        date: '2026-08-12',
+        publishDate: '2026-08-12',
+        visibility: 'Public',
+        views: 168741,
+        viewsFormatted: '168.7K',
+        likes: 7762,
+        comments: 574,
+        shares: 1384,
+        ctr: 8.9,
+        rpm: 1169.74,
+        cpm: 2011.95,
+        watchTimeHrs: 55390,
+        watchTimeHrsFormatted: '55.4K hrs',
+        avgViewDuration: '19:41',
+        avgViewDurationSecs: 1181,
+        avd: '19:41',
+        subscribersGained: 2135,
+        subscribersLost: 0,
+        netSubscribers: 2135,
+        subscribersNetFormatted: '+2.1K',
+        subscribersGainedFormatted: '+2.1K',
+        revenue: 197437.48,
+        revenueFormatted: '₹1,97,437.48',
+        revenueOverride: 197437.48,
+        realtimeViews: 3452,
+        category: 'Entertainment',
+        playlist: '',
+        tags: '',
+        duration: '28:17',
+        durationSecs: 1697,
+        type: 'video',
+        restrictions: 'None',
+        monetization: true,
+        audience: 'Not made for kids'
+      };
+    }
+
     const views = parseNumber(row['Views']);
     const rpm = parseNumber(row['RPM']);
     const revenueOverride = row['Revenue Override'] ?? row['Estimated Revenue Override'] ?? '';
     const revenue = calcVideoRevenue(views, rpm, revenueOverride);
     const thumbNum = (index % 7) + 1;
-    const thumbnail = row['Thumbnail URL'] || row['Thumbnail'] || (index === 0 ? '/thumbnails/latest_video.png' : `/thumbnails/${thumbNum}.webp`);
+    const thumbnail = row['Thumbnail URL'] || row['Thumbnail'] || `/thumbnails/${thumbNum}.webp`;
 
     return {
-      id: String(row['Video ID'] || row['ID'] || ''),
+      id,
       title: row['Title'] || '',
       description: row['Description'] || '',
       thumbnail,
